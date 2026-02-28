@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="dae icon stamp">
+  <defs>
+    <style>
+      :root{ --ink:#111111; --bg:#fbf7f5; }
+      .script{ font-family:"Allura","Great Vibes","Alex Brush",cursive; fill:var(--ink); }
+    </style>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="var(--bg)"/>
+  <circle cx="256" cy="256" r="184" fill="none" stroke="var(--ink)" stroke-width="14"/>
+  <text x="256" y="300" class="script" text-anchor="middle" font-size="200">dae</text>
+</svg>
