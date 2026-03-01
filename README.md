@@ -1,177 +1,185 @@
 # POS & Inventory System
 
-Internal staff system for POS, inventory tracking, costing, and revenue monitoring.
+Internal POS, costing, and inventory system for handmade arrangements built from raw materials.
 
----
+## Current Status
+
+The repository currently includes:
+
+- A React + Vite client with login, dashboard, inventory, arrangements, sales, reports, and settings screens
+- An Express + Prisma API with JWT auth, role checks, and PostgreSQL persistence
+- Core business flows for material purchasing, BOM-based product costing, sales snapshots, and inventory reservations
+
+The codebase is functional for a seeded local/demo setup, but it is still in a stabilization phase. Validation, tests, and some UI coverage are still missing.
+
+## Implemented Features
+
+- Authentication with JWT login and persisted client session
+- Role values for `ADMIN`, `MANAGER`, and `STAFF`
+- Raw material CRUD, low-stock highlighting, purchase history, and purchase intake
+- Weighted average and latest purchase cost tracking
+- Arrangement/product CRUD with BOM components
+- Product cost preview endpoint and client cost drawer
+- Sales recording with immutable production-cost and material-cost snapshots
+- Revenue, inventory value, top products, and dashboard KPI reports
+- Settings storage for costing method, tax rate, currency, and business name
+- Inventory reservation flow tied to product production status changes
+
+## Partial Or Missing Areas
+
+- No frontend users page even though `/api/users` exists
+- Sidebar and route visibility are not role-aware
+- Dashboard depends on `/api/reports/dashboard`, which is restricted to `ADMIN` and `MANAGER`, so `STAFF` users are not fully supported in the current UI flow
+- Product status updates exist in the API and page state, but the action is not surfaced in the visible products table
+- Request validation is still controller-level and inconsistent
+- There are no automated tests
+- Several files still contain mojibake or encoding issues in UI strings and console output
+
+## Tech Stack
+
+- Client: React 18, Vite, Ant Design, Zustand, React Router, Axios
+- Server: Node.js, Express, Prisma, PostgreSQL, JWT, bcrypt
+- Shared: business constants in [`shared/constants.js`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/shared/constants.js)
+
+## Project Structure
+
+```text
+.
+|-- client/
+|   |-- src/
+|   |   |-- api/
+|   |   |-- components/layout/
+|   |   |-- pages/
+|   |   `-- store/
+|   `-- vite.config.js
+|-- server/
+|   |-- prisma/
+|   |   |-- migrations/
+|   |   |-- schema.prisma
+|   |   `-- seed.js
+|   `-- src/
+|       |-- controllers/
+|       |-- middleware/
+|       |-- routes/
+|       |-- services/
+|       `-- utils/
+|-- shared/
+|-- PROGRESS.md
+`-- PHASE_1_BACKLOG.md
+```
 
 ## Prerequisites
 
-- **Node.js** v18+
-- **PostgreSQL** running locally (or a cloud URL)
-- **npm** v9+
-
----
+- Node.js 18+
+- npm 9+
+- PostgreSQL database
 
 ## Installation
 
 ```bash
-# 1. Clone/open the project root
-cd dae.necookie.dev
-
-# 2. Install root dependencies (concurrently)
 npm install
-
-# 3. Install server dependencies
-npm --prefix server install
-
-# 4. Install client dependencies
 npm --prefix client install
+npm --prefix server install
 ```
 
-Or run all three in one command:
+Or:
 
 ```bash
 npm run install:all
 ```
 
----
-
 ## Environment Setup
 
+Copy the root example file into `server/.env`:
+
 ```bash
-# Copy the template
 cp .env.example server/.env
 ```
 
-Open `server/.env` and fill in:
+Required variables used by the current server:
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:pass@localhost:5432/pos_inventory` |
-| `JWT_SECRET` | Secret key for JWT signing | `my_super_secret_key_123` |
-| `PORT` | Server port | `3000` |
-| `CORS_ORIGIN` | Frontend URL | `http://localhost:5173` |
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | Yes | Prisma app connection |
+| `DIRECT_URL` | Yes for migrations | Prisma direct connection |
+| `JWT_SECRET` | Yes | Used to sign login tokens |
+| `PORT` | No | Defaults to `3000` |
+| `CORS_ORIGIN` | No | Defaults to `http://localhost:5173` |
 
----
+Replace any example values before using a real environment.
 
 ## Database Setup
 
-### 1. Create the PostgreSQL database
-
-```sql
-CREATE DATABASE pos_inventory;
-```
-
-### 2. Run migrations
-
-```bash
-cd server
-npx prisma migrate dev --name init
-```
-
-Or from root:
+Run migrations from the root:
 
 ```bash
 npm run migrate
 ```
 
-### 3. Seed the database
+Seed demo data:
 
 ```bash
 npm run seed
 ```
 
-This creates:
-- ✅ 1 admin user
-- ✅ 4 sample raw materials
-- ✅ 1 sample product with BOM
-- ✅ Default system settings
+The current seed creates:
 
----
+- 1 admin user: `admin@pos.local` / `admin123`
+- 4 sample raw materials
+- 1 sample arrangement with BOM
+- 4 base system settings
 
-## Running the App
+## Running The App
+
+Start client and server together:
 
 ```bash
-# Start both client and server (from root)
 npm run dev
 ```
 
-| Service | URL |
-|---------|-----|
-| Frontend | http://localhost:5173 |
-| Backend API | http://localhost:3000 |
-| Prisma Studio | `cd server && npx prisma studio` |
+Default local URLs:
 
-Individual services:
+- Client: `http://localhost:5173`
+- API: `http://localhost:3000`
+- Health check: `http://localhost:3000/api/health`
+
+Individual commands:
 
 ```bash
-npm run dev:client   # React app only (port 5173)
-npm run dev:server   # API server only (port 3000)
+npm run dev:client
+npm run dev:server
+npm start
 ```
 
----
+## Main API Surface
 
-## Default Login
+Implemented routes include:
 
-| Field | Value |
-|-------|-------|
-| Email | `admin@pos.local` |
-| Password | `admin123` |
-| Role | ADMIN |
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET|POST|PUT|DELETE /api/materials`
+- `GET|POST /api/materials/:id/purchases`
+- `GET|POST|PUT|DELETE /api/products`
+- `GET /api/products/:id/cost`
+- `PATCH /api/products/:id/status`
+- `GET|POST /api/sales`
+- `PATCH /api/sales/:id/payment`
+- `GET /api/reports/dashboard`
+- `GET /api/reports/revenue`
+- `GET /api/reports/inventory-value`
+- `GET /api/reports/top-products`
+- `GET /api/settings`
+- `PUT /api/settings/:key`
+- `GET|POST|PUT|DELETE /api/users`
 
-> ⚠️ Change this password immediately in production via the Users page.
+## Notes On Current Behavior
 
----
+- Sales use backend-calculated cost snapshots; the client does not compute final profit logic
+- Product production status currently drives inventory reservation side effects
+- Products currently mix catalog data with live production/payment state, which will likely need a later domain refactor
+- The products list still estimates base cost from incomplete product payload data, so displayed list margins are not fully trustworthy
 
-## Project Structure
+## Documentation
 
-```
-.
-├── client/                  # React + Vite + Ant Design frontend
-│   └── src/
-│       ├── api/             # Axios instance
-│       ├── components/      # Layout (Sidebar, Header, ProtectedRoute)
-│       ├── pages/           # Login, Dashboard, Inventory, Products, Sales, Reports, Settings
-│       └── store/           # Zustand stores (auth, settings)
-├── server/                  # Node.js + Express backend
-│   ├── prisma/
-│   │   ├── schema.prisma    # Full database schema (10 tables)
-│   │   └── seed.js          # Seed script
-│   └── src/
-│       ├── controllers/     # Route handlers
-│       ├── middleware/       # auth, rbac, errorHandler
-│       ├── routes/          # Express routers
-│       ├── services/        # Business logic (costing, inventory, sales, reports)
-│       └── utils/           # asyncHandler
-├── shared/                  # Shared constants (roles, statuses, costing methods)
-├── .env.example             # Environment variable template
-└── package.json             # Root with concurrently scripts
-```
-
----
-
-## API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/auth/login` | Login |
-| GET | `/api/auth/me` | Current user |
-| GET | `/api/materials` | List materials |
-| POST | `/api/materials/:id/purchases` | Record purchase |
-| GET | `/api/products` | List products |
-| GET | `/api/products/:id/cost` | Preview production cost |
-| PATCH | `/api/products/:id/status` | Update production/payment status |
-| POST | `/api/sales` | Record a sale (with snapshot) |
-| GET | `/api/reports/dashboard` | Dashboard KPIs |
-| GET | `/api/reports/revenue` | Revenue & profit |
-| GET | `/api/reports/inventory-value` | Stock valuation |
-| GET/PUT | `/api/settings/:key` | System settings |
-
----
-
-## Key Business Rules
-
-- **All financial calculations** happen on the backend. Frontend never computes cost or profit.
-- **Sale snapshots** are immutable — production cost and material costs are stored at time of sale.
-- **Inventory reservations**: `IN_PRODUCTION` reserves stock, `COMPLETED` confirms deduction, `CANCELLED` releases stock.
-- **Costing method** is configurable: Weighted Average, Latest Purchase, or Manual Override.
+- Current repo status: [`PROGRESS.md`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/PROGRESS.md)
+- Stabilization backlog: [`PHASE_1_BACKLOG.md`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/PHASE_1_BACKLOG.md)

@@ -1,126 +1,111 @@
-# Project Progress And Next Phases
+# Project Progress
 
-This file is based on the current repository state, `README.md`, and the documentation assets present in `documentation/`.
+This status reflects the code currently present in the repository on March 1, 2026.
 
-## Current Codebase Snapshot
+## Implemented
 
-### Implemented
+- [x] Monorepo layout with `client`, `server`, and `shared`
+- [x] React client with authenticated routing and Zustand-based auth/settings state
+- [x] Express API with Prisma and PostgreSQL schema/migration
+- [x] JWT login and `GET /api/auth/me`
+- [x] Role definitions and backend RBAC for admin, manager, and staff
+- [x] Raw material CRUD with soft-delete via `isActive`
+- [x] Purchase intake that updates stock, latest cost, weighted average cost, and transaction records
+- [x] Arrangement/product CRUD with BOM rows in `product_materials`
+- [x] Cost preview endpoint based on configurable costing method
+- [x] Sales creation with immutable sale-level and material-level cost snapshots
+- [x] Sales history with date filtering and payment status display
+- [x] Reports for dashboard KPIs, revenue summary, inventory value, and top products
+- [x] Settings storage and settings screen for costing method, tax rate, currency, and business name
+- [x] Seed data for an admin user, sample materials, a sample arrangement, and base settings
 
-- [x] Monorepo-style split between `client`, `server`, and `shared`
-- [x] React + Vite frontend with Ant Design layout and authenticated routes
-- [x] Express + Prisma backend with PostgreSQL schema and seed script
-- [x] JWT login flow with role values for `ADMIN`, `MANAGER`, and `STAFF`
-- [x] Raw materials CRUD plus purchase history and weighted-average cost updates
-- [x] Product or arrangement CRUD with BOM (`product_materials`) support
-- [x] Sale recording with revenue, profit, and material cost snapshots
-- [x] Inventory reservation lifecycle service for `IN_PRODUCTION`, `COMPLETED`, and `CANCELLED`
-- [x] Dashboard, sales history, reports, and settings pages
-- [x] Report endpoints for dashboard KPIs, revenue summary, top products, and inventory value
-- [x] Seed data for one admin, sample materials, one arrangement, and base system settings
+## Partial
 
-### Present But Incomplete
+- [~] Product production and payment status updates exist in the API
+  - Inventory side effects are implemented on the backend
+  - The products page defines status modal state, but the visible table does not expose a status action
+- [~] User management exists on the API
+  - No client page is implemented
+  - Settings shows a disabled "User Management" tab placeholder
+- [~] Staff role exists end to end
+  - Authentication works
+  - The client is not role-aware, and the dashboard calls a manager/admin-only report endpoint
+- [~] Reporting UI exists
+  - It covers summaries and tables
+  - There are no exports, charts, or deeper operational filters
 
-- [x] Backend user management routes exist
-- [ ] Frontend user management page does not exist
-- [x] Role-based authorization exists on the API
-- [ ] Frontend navigation and route visibility are not role-aware
-- [x] `zod` is installed on the server
-- [ ] Request validation schemas are not implemented
-- [x] Inventory reservation services exist
-- [ ] Product status management is not fully surfaced in the UI
+## Not Yet Implemented
 
-## Structure Summary
+- [ ] Request validation middleware and route schemas
+- [ ] Centralized environment/config validation
+- [ ] Automated tests
+- [ ] Role-aware navigation and route gating in the client
+- [ ] User management UI
+- [ ] Product status controls in the arrangements UI
+- [ ] Sales payment-status editing UI
+- [ ] Stock movement or transaction history UI
+- [ ] Deployment and CI documentation
 
-- `client/src/pages`
-  - `Dashboard`, `Inventory`, `Products`, `Sales`, `Reports`, `Settings`, `Login`
-- `server/src`
-  - `routes`, `controllers`, `services`, `middleware`, `utils`
-- `server/prisma`
-  - schema, migration, and seed
-- `shared/constants.js`
-  - shared business enums and setting keys
+## Current Risks And Gaps
 
-## Main Recommendations
+- [ ] Validation is inconsistent
+  - Controllers still do ad hoc checks for required fields
+  - Invalid enum values, malformed dates, and duplicate BOM entries are not systematically rejected
+- [ ] Sale correctness rules are underspecified
+  - `createSale` checks only that the product exists and is active
+  - It does not enforce a production-status eligibility rule
+- [ ] Transaction safety is incomplete
+  - `sales.service` opens a transaction
+  - `calculateProductionCost` still reads through the global Prisma client instead of the same transaction context
+- [ ] Product status transitions are permissive
+  - Inventory side effects only run for specific transitions
+  - Unsupported jumps are not explicitly rejected
+- [ ] Client/server data mismatch exists in products list costing
+  - `GET /api/products` includes material name and unit only
+  - The products page still estimates list cost from missing `latestUnitCost` data
+- [ ] Encoding quality is inconsistent
+  - README was fixed, but application files still contain mojibake in peso signs, arrows, and console output
 
-- [ ] Separate catalog products from production jobs or customer orders
-  - Recommendation: keep `Product` as the reusable arrangement template and introduce a new production or order entity for status, reservations, and fulfillment.
-  - Reason: the current model mixes product catalog data with live operational state, which will become limiting as soon as one arrangement can be produced or sold multiple times.
+## Recommended Next Phases
 
-- [ ] Stabilize backend correctness before expanding features
-  - Recommendation: add request validation, service-level business rule checks, and transaction-safe reads.
-  - Reason: the current backend already handles money, costing, and stock; correctness matters more than adding more pages.
+## Phase 1: Stabilize Core Flows
 
-- [ ] Close the API/UI mismatch next
-  - Recommendation: expose user management, product status actions, transaction history, and role-aware navigation in the client.
-  - Reason: several backend capabilities are already implemented but not yet operable from the frontend.
+- [ ] Add env validation on server startup
+- [ ] Add reusable request validation middleware with `zod`
+- [ ] Enforce product status transition rules explicitly
+- [ ] Define sale eligibility rules against production state
+- [ ] Make costing reads transaction-safe
+- [ ] Normalize error payloads across auth, RBAC, validation, and Prisma failures
+- [ ] Fix products page cost display mismatch
+- [ ] Clean up remaining encoding issues
 
-- [ ] Add production-readiness work before broader rollout
-  - Recommendation: introduce tests, environment validation, logging standards, and deployment docs.
-  - Reason: there are currently no automated tests and no clear release safety net.
+## Phase 2: Close API/UI Gaps
 
-## Phase 1: Core Stabilization
-
-- [ ] Add `zod` request schemas for auth, materials, purchases, products, sales, settings, and users
-- [ ] Validate enum transitions for production and payment statuses on the backend
-- [ ] Prevent invalid sales flows
-  - Recommendation: require clear fulfillment rules, such as only selling completed production items or explicitly supporting made-to-order sales.
-- [ ] Make all costing and inventory reads transaction-safe
-  - Recommendation: avoid mixing global Prisma reads inside transaction-based workflows.
-- [ ] Standardize API error payloads and validation messages
-- [ ] Add environment checks for required secrets and database URLs on startup
-- [ ] Fix obvious UI/backend data mismatches
-  - Recommendation: the products table currently estimates cost from fields not fully returned by the products API.
-- [ ] Clean up text encoding issues in docs and UI strings
-
-## Phase 2: Operational Completeness
-
-- [ ] Add a Users page for admin account management
-- [ ] Add product status controls in the UI for `PENDING`, `IN_PRODUCTION`, `COMPLETED`, and `CANCELLED`
+- [ ] Build a users page for admin workflows
+- [ ] Surface product status updates in the arrangements screen
 - [ ] Add payment-status update controls for existing sales
-- [ ] Add transaction history or stock movement screens
-- [ ] Show role-based menus and route guards on the frontend
-- [ ] Add material-level manual cost editing UX that matches the costing-method setting
-- [ ] Add low-stock actions
-  - Recommendation: include reorder views, restock shortcuts, and better supplier capture.
+- [ ] Add transaction or stock-movement history screens
+- [ ] Make sidebar visibility and protected routes role-aware
+- [ ] Resolve staff dashboard access by changing permissions or using a staff-safe dashboard data source
 
-## Phase 3: Domain Refactor
+## Phase 3: Refactor The Domain Model
 
-- [ ] Split arrangement templates from production instances or customer orders
-- [ ] Introduce explicit order lifecycle states
-  - Recommendation: quote, confirmed, in production, fulfilled, cancelled, refunded.
-- [ ] Support producing and selling multiple units cleanly without overloading the `Product` record
-- [ ] Revisit reservation records so they point to a production job or order, not only the catalog product
-- [ ] Add audit-friendly links between sales, reservations, transactions, and fulfillment records
+- [ ] Separate arrangement templates from production jobs or customer orders
+- [ ] Move reservation records to a production/order entity instead of the catalog product
+- [ ] Support repeated production and repeated sales of the same arrangement cleanly
+- [ ] Clarify fulfillment and payment lifecycle states
 
-## Phase 4: Reporting And Decision Support
+## Phase 4: Production Readiness
 
-- [ ] Add filters and export support for reports
-- [ ] Add trend charts for daily, weekly, and monthly revenue and profit
-- [ ] Add margin analysis by arrangement and by material
-- [ ] Add aging views for unpaid and partially paid sales
-- [ ] Add forecasting or reorder recommendation reports based on actual usage
+- [ ] Add backend tests for costing, reservations, and sales snapshots
+- [ ] Add frontend smoke tests for login and core screens
+- [ ] Add deployment documentation and backup expectations
+- [ ] Add CI checks for install, migration, build, and tests
+- [ ] Add basic observability and structured error logging
 
-## Phase 5: Release Readiness
+## Delivery Order
 
-- [ ] Add backend tests for costing, reservations, sales snapshots, and reporting
-- [ ] Add frontend smoke tests for login and core workflows
-- [ ] Add seeded demo scenarios that cover multiple arrangements and sales cases
-- [ ] Add a deployment section for production database, environment variables, and backup strategy
-- [ ] Add CI checks for install, Prisma generation, build, and tests
-- [ ] Add observability basics
-  - Recommendation: request logging, error tracking, and database migration discipline.
-
-## Suggested Delivery Order
-
-- [ ] First deliver Phase 1 before broadening scope
-- [ ] Then finish the missing operational UI in Phase 2
-- [ ] Then do the domain refactor in Phase 3 before scale introduces data-model debt
-- [ ] Then expand reporting and release readiness in Phases 4 and 5
-
-## Practical Priority
-
-- [ ] Highest priority: backend validation, sales and inventory rules, transaction safety
-- [ ] High priority: user management UI, product status UI, role-aware frontend
-- [ ] Medium priority: reporting depth and exports
-- [ ] Medium priority: deployment, CI, and automated tests
-- [ ] Strategic priority: split catalog products from production or order records
+- [ ] First: Phase 1 stabilization
+- [ ] Second: Phase 2 UI completion
+- [ ] Third: Phase 3 domain refactor
+- [ ] Fourth: Phase 4 production hardening
