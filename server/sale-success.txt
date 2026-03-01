@@ -1,0 +1,8 @@
+﻿--- FETCHING PRODUCT FOR SALE ---
+prisma:info Starting a postgresql pool with 9 connections.
+prisma:query SELECT "public"."products"."id", "public"."products"."name", "public"."products"."sku", "public"."products"."description", "public"."products"."selling_price", "public"."products"."production_status"::text, "public"."products"."payment_status"::text, "public"."products"."is_active", "public"."products"."created_at", "public"."products"."updated_at" FROM "public"."products" WHERE 1=1 ORDER BY "public"."products"."created_at" DESC LIMIT $1 OFFSET $2
+Found product: Test Bouquet 1772369090205
+prisma:query SELECT "public"."users"."id", "public"."users"."name", "public"."users"."email", "public"."users"."password_hash", "public"."users"."role"::text, "public"."users"."is_active", "public"."users"."created_at", "public"."users"."updated_at" FROM "public"."users" WHERE "public"."users"."email" = $1 LIMIT $2 OFFSET $3
+
+--- CREATING SALE DIRECTLY ---
+Γ£à Sale created: 3 Profit: 2890

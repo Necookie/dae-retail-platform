@@ -1,0 +1,48 @@
+﻿--- FETCHING MATERIALS ---
+Found Material: Test Fuzzy Wire with variants: 2
+
+--- PURCHASING VARIANT (Red) ---
+Purchase Response: {
+  success: true,
+  data: {
+    id: 4,
+    variantId: 7,
+    supplier: 'Test Supplier',
+    quantity: '100',
+    unitCost: '5.5',
+    totalCost: '550',
+    purchaseDate: '2026-03-01T12:55:34.127Z',
+    notes: 'Test Purchase',
+    createdAt: '2026-03-01T12:55:34.127Z'
+  }
+}
+
+--- CREATING PRODUCT ---
+Product created: true Test Bouquet 1772369735354
+
+--- CREATING SALE ---
+Sale Response: {
+  success: true,
+  data: {
+    sale: {
+      id: 4,
+      productId: 4,
+      soldById: 1,
+      quantity: 2,
+      unitPrice: '1500',
+      totalRevenue: '3000',
+      productionCostSnapshot: '110',
+      profit: '2890',
+      paymentStatus: 'PAID',
+      notes: 'Test Sale',
+      saleDate: '2026-03-01T12:55:48.140Z',
+      createdAt: '2026-03-01T12:55:48.140Z'
+    },
+    productionCostSnapshot: 110,
+    profit: 2890,
+    costingMethod: 'WEIGHTED_AVERAGE',
+    breakdown: [ [Object] ]
+  }
+}
+
+Γ£à End-to-End Test Completed Successfully.

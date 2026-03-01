@@ -50,6 +50,7 @@ const Products = () => {
                 sellingPrice: parseFloat(item.sellingPrice),
                 materials: item.productMaterials?.map((m) => ({
                     materialId: m.materialId,
+                    variantId: m.variantId,
                     quantityRequired: parseFloat(m.quantityRequired),
                 })) || [],
             })
@@ -125,7 +126,7 @@ const Products = () => {
             title: 'Base Cost',
             key: 'baseCost',
             render: (_, r) => {
-                const totalCost = r.productMaterials?.reduce((sum, m) => sum + (m.quantityRequired * (m.material?.latestUnitCost || 0)), 0) || 0;
+                const totalCost = r.productMaterials?.reduce((sum, m) => sum + (m.quantityRequired * (m.variant?.latestUnitCost || 0)), 0) || 0;
                 return <Text>₱{totalCost.toFixed(2)}</Text>;
             }
         },
@@ -148,7 +149,7 @@ const Products = () => {
             title: 'Margin',
             key: 'margin',
             render: (_, r) => {
-                const totalCost = r.productMaterials?.reduce((sum, m) => sum + (m.quantityRequired * (m.material?.latestUnitCost || 0)), 0) || 0;
+                const totalCost = r.productMaterials?.reduce((sum, m) => sum + (m.quantityRequired * (m.variant?.latestUnitCost || 0)), 0) || 0;
                 const sellingPrice = parseFloat(r.sellingPrice) || 0;
                 const profit = sellingPrice - totalCost;
                 const margin = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
@@ -223,21 +224,52 @@ const Products = () => {
                         {(fields, { add, remove }) => (
                             <>
                                 {fields.map(({ key, name, ...rest }) => (
-                                    <Space key={key} align="baseline" style={{ display: 'flex', marginBottom: 8 }} size={8}>
-                                        <Form.Item {...rest} name={[name, 'materialId']} rules={[{ required: true, message: 'Select material' }]} style={{ flex: 2, margin: 0 }}>
-                                            <Select placeholder="Select material" style={{ minWidth: 200 }}>
-                                                {materials.map((m) => (
-                                                    <Option key={m.id} value={m.id}>{m.name} ({m.unit})</Option>
-                                                ))}
-                                            </Select>
+                                    <Space key={key} align="start" style={{ display: 'flex', marginBottom: 8, flexWrap: 'wrap' }} size={8}>
+                                        <div style={{ flex: 2, minWidth: 200 }}>
+                                            <Form.Item {...rest} name={[name, 'materialId']} rules={[{ required: true, message: 'Select material' }]} style={{ margin: 0, marginBottom: 4 }}>
+                                                <Select
+                                                    placeholder="Select material"
+                                                    onChange={() => {
+                                                        const currentMaterials = form.getFieldValue('materials');
+                                                        currentMaterials[name].variantId = undefined;
+                                                        form.setFieldsValue({ materials: currentMaterials });
+                                                    }}
+                                                >
+                                                    {materials.map((m) => (
+                                                        <Option key={m.id} value={m.id}>{m.name}</Option>
+                                                    ))}
+                                                </Select>
+                                            </Form.Item>
+
+                                            <Form.Item
+                                                shouldUpdate={(prevValues, currentValues) =>
+                                                    prevValues.materials?.[name]?.materialId !== currentValues.materials?.[name]?.materialId
+                                                }
+                                                style={{ margin: 0 }}
+                                            >
+                                                {({ getFieldValue }) => {
+                                                    const selectedMaterialId = getFieldValue(['materials', name, 'materialId']);
+                                                    const selectedMaterial = materials.find(m => m.id === selectedMaterialId);
+
+                                                    return (
+                                                        <Form.Item {...rest} name={[name, 'variantId']} rules={[{ required: true, message: 'Select variant' }]} style={{ margin: 0 }}>
+                                                            <Select placeholder="Select variant" disabled={!selectedMaterialId}>
+                                                                {selectedMaterial?.variants?.map(v => (
+                                                                    <Option key={v.id} value={v.id}>{v.name} ({selectedMaterial.unit})</Option>
+                                                                ))}
+                                                            </Select>
+                                                        </Form.Item>
+                                                    );
+                                                }}
+                                            </Form.Item>
+                                        </div>
+                                        <Form.Item {...rest} name={[name, 'quantityRequired']} rules={[{ required: true, message: 'Qty required' }]} style={{ flex: 1, margin: 0, minWidth: 100 }}>
+                                            <InputNumber min={0.0001} step={0.01} placeholder="Qty" style={{ width: '100%' }} />
                                         </Form.Item>
-                                        <Form.Item {...rest} name={[name, 'quantityRequired']} rules={[{ required: true, message: 'Qty required' }]} style={{ flex: 1, margin: 0 }}>
-                                            <InputNumber min={0.0001} step={0.01} placeholder="Qty" style={{ width: 100 }} />
-                                        </Form.Item>
-                                        <Button danger size="small" type="text" icon={<DeleteOutlined />} onClick={() => remove(name)} style={{ color: 'var(--danger)' }} />
+                                        <Button danger size="small" type="text" icon={<DeleteOutlined />} onClick={() => remove(name)} style={{ color: 'var(--danger)', marginTop: 4 }} />
                                     </Space>
                                 ))}
-                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />} style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />} style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', marginTop: 8 }}>
                                     Add Component
                                 </Button>
                             </>
@@ -265,7 +297,7 @@ const Products = () => {
                             {costModal.data.breakdown.map((item, i) => (
                                 <Row key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
                                     <Col span={16}>
-                                        <Text strong style={{ fontSize: 15 }}>{item.materialName}</Text>
+                                        <Text strong style={{ fontSize: 15 }}>{item.materialName} - {item.variantName}</Text>
                                         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
                                             {item.quantityUsed} {item.unit} @ ₱{(item.lineCost / item.quantityUsed).toFixed(2)}
                                         </div>

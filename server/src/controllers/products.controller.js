@@ -12,7 +12,12 @@ const getProducts = asyncHandler(async (req, res) => {
     const products = await prisma.product.findMany({
         where: { isActive: true },
         include: {
-            productMaterials: { include: { material: { select: { id: true, name: true, unit: true } } } },
+            productMaterials: {
+                include: {
+                    material: true,
+                    variant: true
+                }
+            },
         },
         orderBy: { createdAt: 'desc' },
     });
@@ -23,7 +28,7 @@ const getProduct = asyncHandler(async (req, res) => {
     const product = await prisma.product.findUnique({
         where: { id: +req.params.id },
         include: {
-            productMaterials: { include: { material: true } },
+            productMaterials: { include: { material: true, variant: true } },
             inventoryReservations: { where: { status: 'RESERVED' } },
         },
     });
@@ -50,15 +55,16 @@ const createProduct = asyncHandler(async (req, res) => {
                 data: materials.map((m) => ({
                     productId: p.id,
                     materialId: m.materialId,
+                    variantId: m.variantId,
                     quantityRequired: m.quantityRequired,
                 })),
             });
         }
         return tx.product.findUnique({
             where: { id: p.id },
-            include: { productMaterials: { include: { material: true } } },
+            include: { productMaterials: { include: { material: true, variant: true } } },
         });
-    });
+    }, { maxWait: 10000, timeout: 30000 });
 
     res.status(201).json({ success: true, data: product });
 });
@@ -83,6 +89,7 @@ const updateProduct = asyncHandler(async (req, res) => {
                     data: materials.map((m) => ({
                         productId,
                         materialId: m.materialId,
+                        variantId: m.variantId,
                         quantityRequired: m.quantityRequired,
                     })),
                 });
@@ -91,9 +98,9 @@ const updateProduct = asyncHandler(async (req, res) => {
 
         return tx.product.findUnique({
             where: { id: productId },
-            include: { productMaterials: { include: { material: true } } },
+            include: { productMaterials: { include: { material: true, variant: true } } },
         });
-    });
+    }, { maxWait: 10000, timeout: 30000 });
 
     res.json({ success: true, data: product });
 });

@@ -1,0 +1,31 @@
+﻿
+> pos-inventory-server@1.0.0 dev
+> nodemon src/app.js
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node src/app.js`[39m
+Γ£à Server running on http://localhost:3000
+[0mPOST /api/auth/login [32m200[0m 2445.482 ms - 325[0m
+[0mGET /api/materials [32m200[0m 2809.909 ms - 1916[0m
+[0mPOST /api/materials/3/purchases [32m201[0m 3010.771 ms - 230[0m
+[0mPOST /api/products [32m201[0m 5144.131 ms - 825[0m
+[0mPOST /api/sales [31m500[0m 9070.517 ms - 92[0m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/app.js`[39m
+Γ£à Server running on http://localhost:3000
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/app.js`[39m
+Γ£à Server running on http://localhost:3000
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/app.js`[39m
+Γ£à Server running on http://localhost:3000
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/app.js`[39m
+Γ£à Server running on http://localhost:3000
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node src/app.js`[39m
+Γ£à Server running on http://localhost:3000

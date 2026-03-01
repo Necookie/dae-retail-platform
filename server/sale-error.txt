@@ -1,0 +1,39 @@
+﻿--- FETCHING PRODUCT FOR SALE ---
+prisma:info Starting a postgresql pool with 9 connections.
+prisma:query SELECT "public"."products"."id", "public"."products"."name", "public"."products"."sku", "public"."products"."description", "public"."products"."selling_price", "public"."products"."production_status"::text, "public"."products"."payment_status"::text, "public"."products"."is_active", "public"."products"."created_at", "public"."products"."updated_at" FROM "public"."products" WHERE 1=1 ORDER BY "public"."products"."created_at" DESC LIMIT $1 OFFSET $2
+Found product: Test Bouquet 1772369090205
+prisma:query SELECT "public"."users"."id", "public"."users"."name", "public"."users"."email", "public"."users"."password_hash", "public"."users"."role"::text, "public"."users"."is_active", "public"."users"."created_at", "public"."users"."updated_at" FROM "public"."users" WHERE "public"."users"."email" = $1 LIMIT $2 OFFSET $3
+
+--- CREATING SALE DIRECTLY ---
+
+Γ¥î Error Name: PrismaClientKnownRequestError
+Γ¥î Error Message: 
+Invalid `tx.sales.create()` invocation in
+C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\src\services\sales.service.js:38:37
+
+  35 const profit = totalRevenue - productionCostSnapshot;
+  36 
+  37 // 4. Create the sale record
+ΓåÆ 38 const sale = await tx.sales.create(
+Transaction API error: Transaction already closed: A query cannot be executed on an expired transaction. The timeout for this transaction was 5000 ms, however 6224 ms passed since the start of the transaction. Consider increasing the interactive transaction timeout or doing less work in the transaction.
+Γ¥î Error Code: P2028
+Γ¥î Error Meta: {
+  modelName: 'Sales',
+  error: 'Transaction already closed: A query cannot be executed on an expired transaction. The timeout for this transaction was 5000 ms, however 6224 ms passed since the start of the transaction. Consider increasing the interactive transaction timeout or doing less work in the transaction.'
+}
+Γ¥î Error Stack: PrismaClientKnownRequestError: 
+Invalid `tx.sales.create()` invocation in
+C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\src\services\sales.service.js:38:37
+
+  35 const profit = totalRevenue - productionCostSnapshot;
+  36 
+  37 // 4. Create the sale record
+ΓåÆ 38 const sale = await tx.sales.create(
+Transaction API error: Transaction already closed: A query cannot be executed on an expired transaction. The timeout for this transaction was 5000 ms, however 6224 ms passed since the start of the transaction. Consider increasing the interactive transaction timeout or doing less work in the transaction.
+    at $n.handleRequestError (C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\src\services\sales.service.js:38:22
+    at async Proxy._transactionWithCallback (C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\node_modules\@prisma\client\runtime\library.js:130:8000)
+    at async run (C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\test-db-sale.js:19:22)

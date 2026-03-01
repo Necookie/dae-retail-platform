@@ -4,22 +4,23 @@ const prisma = new PrismaClient();
 
 /**
  * Resolves the unit cost of a material based on the active costing method.
- * @param {Object} material - The raw material record from DB
+ * @param {Object} variant - The material variant record from DB
  * @param {string} costingMethod - WEIGHTED_AVERAGE | LATEST_PURCHASE | MANUAL_OVERRIDE
  * @returns {Decimal} unit cost
  */
-const resolveMaterialCost = (material, costingMethod) => {
+const resolveMaterialCost = (variant, costingMethod) => {
     switch (costingMethod) {
         case 'LATEST_PURCHASE':
-            return material.latestUnitCost;
+            return variant.latestUnitCost;
         case 'MANUAL_OVERRIDE':
-            if (!material.manualUnitCost) {
-                throw new Error(`No manual cost set for material: ${material.name}`);
+            if (!variant.manualUnitCost) {
+                // If variant has no manual cost, we'll try to fallback, but ideally it should
+                throw new Error(`No manual cost set for variant: ${variant.name}`);
             }
-            return material.manualUnitCost;
+            return variant.manualUnitCost;
         case 'WEIGHTED_AVERAGE':
         default:
-            return material.weightedAvgCost;
+            return variant.weightedAvgCost;
     }
 };
 
@@ -32,7 +33,10 @@ const resolveMaterialCost = (material, costingMethod) => {
 const calculateProductionCost = async (productId, costingMethod) => {
     const bom = await prisma.productMaterial.findMany({
         where: { productId },
-        include: { material: true },
+        include: {
+            material: true,
+            variant: true
+        },
     });
 
     if (!bom.length) {
@@ -43,14 +47,15 @@ const calculateProductionCost = async (productId, costingMethod) => {
     const breakdown = [];
 
     for (const item of bom) {
-        const unitCost = parseFloat(resolveMaterialCost(item.material, costingMethod));
+        const unitCost = parseFloat(resolveMaterialCost(item.variant, costingMethod));
         const qty = parseFloat(item.quantityRequired);
         const lineCost = unitCost * qty;
         totalCost += lineCost;
 
         breakdown.push({
             materialId: item.materialId,
-            materialName: item.material.name,
+            variantId: item.variantId,
+            materialName: `${item.material.name} - ${item.variant.name}`,
             unit: item.material.unit,
             quantityUsed: qty,
             unitCostSnapshot: unitCost,
@@ -62,20 +67,20 @@ const calculateProductionCost = async (productId, costingMethod) => {
 };
 
 /**
- * Updates weighted average cost of a material after a new purchase.
+ * Updates weighted average cost of a material variant after a new purchase.
  * Formula: ((old_qty * old_avg) + (new_qty * new_cost)) / (old_qty + new_qty)
  */
-const updateWeightedAverage = async (materialId, newQty, newUnitCost, tx) => {
+const updateWeightedAverage = async (variantId, newQty, newUnitCost, tx) => {
     const db = tx || prisma;
-    const material = await db.rawMaterial.findUnique({ where: { id: materialId } });
-    const oldQty = parseFloat(material.quantityOnHand);
-    const oldAvg = parseFloat(material.weightedAvgCost);
+    const variant = await db.materialVariant.findUnique({ where: { id: variantId } });
+    const oldQty = parseFloat(variant.quantityOnHand);
+    const oldAvg = parseFloat(variant.weightedAvgCost);
     const newAvgCost = oldQty + newQty === 0
         ? newUnitCost
         : ((oldQty * oldAvg) + (newQty * newUnitCost)) / (oldQty + newQty);
 
-    await db.rawMaterial.update({
-        where: { id: materialId },
+    await db.materialVariant.update({
+        where: { id: variantId },
         data: {
             weightedAvgCost: newAvgCost,
             latestUnitCost: newUnitCost,
