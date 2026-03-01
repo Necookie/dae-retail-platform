@@ -201,6 +201,20 @@ h1, h2, h3, h4, h5, h6, .ant-typography h1, .ant-typography h2, .ant-typography 
   margin-top: 4px;
 }
 
+.info-banner {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  background: #fcfbf9;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow);
+}
+
+.info-banner.compact {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
 /* Stat cards */
 .stat-card {
   border-radius: var(--radius) !important;

@@ -2,13 +2,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
     Table, Button, Form, Select, InputNumber, Input, Card, Tag,
-    Typography, Space, Row, Col, Divider, message, DatePicker, Drawer,
+    Typography, Row, Col, message, DatePicker, Modal,
 } from 'antd'
-import { ShoppingCartOutlined, PlusOutlined } from '@ant-design/icons'
+import { ShoppingCartOutlined, EditOutlined } from '@ant-design/icons'
 import api from '../api/axios'
 import dayjs from 'dayjs'
+import useAuthStore from '../store/authStore'
 
-const { Text, Title } = Typography
+const { Text } = Typography
 const { RangePicker } = DatePicker
 const { Option } = Select
 
@@ -21,8 +22,11 @@ const Sales = () => {
     const [submitting, setSubmitting] = useState(false)
     const [costPreview, setCostPreview] = useState(null)
     const [dateRange, setDateRange] = useState([])
-    const [drawerOpen, setDrawerOpen] = useState(false)
+    const [paymentModal, setPaymentModal] = useState({ open: false, sale: null })
     const [form] = Form.useForm()
+    const [paymentForm] = Form.useForm()
+    const { user } = useAuthStore()
+    const canUpdatePayments = ['ADMIN', 'MANAGER'].includes(user?.role)
 
     const fetchSales = useCallback(async (start, end) => {
         setLoading(true)
@@ -61,7 +65,6 @@ const Sales = () => {
             message.success(`Sale recorded! Profit: ₱${parseFloat(data.data.profit).toFixed(2)}`)
             form.resetFields()
             setCostPreview(null)
-            setDrawerOpen(false)
             fetchSales()
         } catch (err) {
             message.error(err.response?.data?.error?.message || 'Failed to record sale')
@@ -76,6 +79,22 @@ const Sales = () => {
             fetchSales(dates[0].format('YYYY-MM-DD'), dates[1].format('YYYY-MM-DD'))
         } else {
             fetchSales()
+        }
+    }
+
+    const openPaymentModal = (sale) => {
+        setPaymentModal({ open: true, sale })
+        paymentForm.setFieldsValue({ paymentStatus: sale.paymentStatus })
+    }
+
+    const handlePaymentUpdate = async (values) => {
+        try {
+            await api.patch(`/sales/${paymentModal.sale.id}/payment`, values)
+            message.success('Payment status updated')
+            setPaymentModal({ open: false, sale: null })
+            fetchSales()
+        } catch (err) {
+            message.error(err.response?.data?.error?.message || 'Failed to update payment status')
         }
     }
 
@@ -131,6 +150,16 @@ const Sales = () => {
             dataIndex: 'saleDate',
             render: (d) => dayjs(d).format('MMM D, YYYY h:mm A'),
         },
+        ...(canUpdatePayments ? [{
+            title: 'Actions',
+            key: 'actions',
+            width: 100,
+            render: (_, record) => (
+                <Button size="small" icon={<EditOutlined />} onClick={() => openPaymentModal(record)}>
+                    Payment
+                </Button>
+            ),
+        }] : []),
     ]
 
     const sellingPrice = products.find((p) => p.id === form.getFieldValue('productId'))?.sellingPrice
@@ -145,6 +174,11 @@ const Sales = () => {
                     <h1 className="page-title">POS / Sales</h1>
                     <p className="page-subtitle">Process new arrangements and track income</p>
                 </div>
+                {canUpdatePayments && (
+                    <div className="info-banner compact">
+                        Payment status updates are enabled for manager and admin accounts.
+                    </div>
+                )}
             </div>
 
             <Row gutter={24}>
@@ -239,6 +273,27 @@ const Sales = () => {
                     </Card>
                 </Col>
             </Row>
+
+            <Modal
+                title={paymentModal.sale ? `Update Payment: ${paymentModal.sale.product?.name}` : 'Update Payment'}
+                open={paymentModal.open}
+                onCancel={() => setPaymentModal({ open: false, sale: null })}
+                onOk={() => paymentForm.submit()}
+                destroyOnClose
+            >
+                <Form form={paymentForm} layout="vertical" onFinish={handlePaymentUpdate} style={{ marginTop: 16 }}>
+                    <Form.Item name="paymentStatus" label="Payment Status" rules={[{ required: true, message: 'Select a payment status' }]}>
+                        <Select
+                            options={[
+                                { value: 'UNPAID', label: 'UNPAID' },
+                                { value: 'PARTIAL', label: 'PARTIAL' },
+                                { value: 'PAID', label: 'PAID' },
+                                { value: 'REFUNDED', label: 'REFUNDED' },
+                            ]}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     )
 }

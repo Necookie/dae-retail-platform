@@ -4,17 +4,17 @@ import {
     Table, Button, Modal, Drawer, Form, Input, InputNumber, Tag, Space, Select,
     Typography, message, Tooltip, Divider, Empty, Row, Col
 } from 'antd'
-import { PlusOutlined, EditOutlined, FileSearchOutlined, DeleteOutlined } from '@ant-design/icons'
+import { PlusOutlined, EditOutlined, FileSearchOutlined, DeleteOutlined, SyncOutlined } from '@ant-design/icons'
 import api from '../api/axios'
 
 const { Text } = Typography
 const { Option } = Select
 
 const statusColors = {
-    PENDING: 'var(--text-secondary)', IN_PRODUCTION: 'var(--danger)', COMPLETED: 'var(--success)', CANCELLED: 'var(--danger)',
+    PENDING: 'default', IN_PRODUCTION: 'processing', COMPLETED: 'success', CANCELLED: 'error',
 }
 const paymentColors = {
-    UNPAID: 'var(--danger)', PARTIAL: 'var(--warning)', PAID: 'var(--success)', REFUNDED: 'var(--text-secondary)',
+    UNPAID: 'error', PARTIAL: 'warning', PAID: 'success', REFUNDED: 'default',
 }
 
 const Products = () => {
@@ -96,6 +96,14 @@ const Products = () => {
         }
     }
 
+    const openStatusModal = (item) => {
+        setStatusModal({ open: true, item })
+        statusForm.setFieldsValue({
+            productionStatus: item.productionStatus,
+            paymentStatus: item.paymentStatus,
+        })
+    }
+
     const columns = [
         {
             title: 'Arrangement',
@@ -127,6 +135,16 @@ const Products = () => {
             render: (v) => <Text strong>₱{parseFloat(v).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</Text>,
         },
         {
+            title: 'Production',
+            dataIndex: 'productionStatus',
+            render: (status) => <Tag color={statusColors[status]}>{status}</Tag>,
+        },
+        {
+            title: 'Payment',
+            dataIndex: 'paymentStatus',
+            render: (status) => <Tag color={paymentColors[status]}>{status}</Tag>,
+        },
+        {
             title: 'Margin',
             key: 'margin',
             render: (_, r) => {
@@ -150,6 +168,7 @@ const Products = () => {
                 <Space>
                     <Tooltip title="View Build"><Button size="small" type="primary" icon={<FileSearchOutlined />} onClick={() => viewCost(r.id)} /></Tooltip>
                     <Tooltip title="Edit Arrangement"><Button size="small" icon={<EditOutlined />} onClick={() => openModal(r)} /></Tooltip>
+                    <Tooltip title="Update Status"><Button size="small" icon={<SyncOutlined />} onClick={() => openStatusModal(r)} /></Tooltip>
                 </Space>
             ),
         },
@@ -190,7 +209,7 @@ const Products = () => {
                     </Form.Item>
                     <Space style={{ width: '100%' }} size={12}>
                         <Form.Item name="sku" label="SKU" style={{ flex: 1 }}>
-                            <Input placeholder="CAKE-001" />
+                            <Input placeholder="BOUQ-001" />
                         </Form.Item>
                         <Form.Item name="sellingPrice" label="Selling Price (₱)" rules={[{ required: true }]} style={{ flex: 1 }}>
                             <InputNumber min={0} step={0.01} style={{ width: '100%' }} prefix="₱" />
@@ -276,6 +295,37 @@ const Products = () => {
                     </div>
                 ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No components found" />}
             </Drawer>
+
+            <Modal
+                title={statusModal.item ? `Update Status: ${statusModal.item.name}` : 'Update Status'}
+                open={statusModal.open}
+                onCancel={() => setStatusModal({ open: false, item: null })}
+                onOk={() => statusForm.submit()}
+                destroyOnClose
+            >
+                <Form form={statusForm} layout="vertical" onFinish={handleStatusUpdate} style={{ marginTop: 16 }}>
+                    <Form.Item name="productionStatus" label="Production Status">
+                        <Select
+                            options={[
+                                { value: 'PENDING', label: 'PENDING' },
+                                { value: 'IN_PRODUCTION', label: 'IN_PRODUCTION' },
+                                { value: 'COMPLETED', label: 'COMPLETED' },
+                                { value: 'CANCELLED', label: 'CANCELLED' },
+                            ]}
+                        />
+                    </Form.Item>
+                    <Form.Item name="paymentStatus" label="Payment Status">
+                        <Select
+                            options={[
+                                { value: 'UNPAID', label: 'UNPAID' },
+                                { value: 'PARTIAL', label: 'PARTIAL' },
+                                { value: 'PAID', label: 'PAID' },
+                                { value: 'REFUNDED', label: 'REFUNDED' },
+                            ]}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
 
 
         </div>

@@ -198,7 +198,7 @@ const Inventory = () => {
             >
                 <Form form={form} layout="vertical" onFinish={handleSaveMaterial} style={{ marginTop: 16 }}>
                     <Form.Item name="name" label="Material Name" rules={[{ required: true }]}>
-                        <Input placeholder="e.g. All-Purpose Flour" />
+                        <Input placeholder="e.g. Premium Leather Hide" />
                     </Form.Item>
                     <Form.Item name="unit" label="Unit" rules={[{ required: true }]}>
                         <Select placeholder="Select unit">

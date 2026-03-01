@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Card, Form, Select, Input, Button, Typography, Divider, message, Row, Col, InputNumber, Tabs } from 'antd'
 import { SettingOutlined, SaveOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import useSettingsStore from '../store/settingsStore'
 
 const { Title, Text } = Typography
 
 const Settings = () => {
+    const navigate = useNavigate()
     const { settings, isLoaded, fetchSettings, updateSetting } = useSettingsStore()
     const [form] = Form.useForm()
     const [saving, setSaving] = useState(false)
@@ -64,7 +66,7 @@ const Settings = () => {
                                             label="Business Name"
                                             help="Displayed in header and reports"
                                         >
-                                            <Input placeholder="My Bakery POS" />
+                                            <Input placeholder="My Artisan Workshop POS" />
                                         </Form.Item>
 
                                         <Divider />
@@ -120,7 +122,16 @@ const Settings = () => {
                         {
                             key: 'users',
                             label: 'User Management',
-                            disabled: true, // Placeholder for Phase 2
+                            children: (
+                                <Card style={{ borderRadius: 12, border: '1px solid var(--border)' }}>
+                                    <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                                        User administration now lives on its own screen so role and account workflows do not get mixed into system settings.
+                                    </Text>
+                                    <Button type="default" onClick={() => navigate('/users')}>
+                                        Open Users
+                                    </Button>
+                                </Card>
+                            ),
                         }
                     ]}
                 />
