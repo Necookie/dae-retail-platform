@@ -111,7 +111,7 @@ const Sales = () => {
             title: 'Profit',
             dataIndex: 'profit',
             render: (v) => (
-                <Text strong style={{ color: parseFloat(v) >= 0 ? '#10b981' : '#ef4444' }}>
+                <Text strong style={{ color: parseFloat(v) >= 0 ? 'var(--success)' : 'var(--danger)' }}>
                     ₱{parseFloat(v).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </Text>
             ),
@@ -167,7 +167,7 @@ const Sales = () => {
 
                 {/* Right Column: POS Cart */}
                 <Col span={10}>
-                    <Card title={<><ShoppingCartOutlined style={{ marginRight: 8 }} />New Sale</>} bordered={false} style={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card-bg)' }}>
+                    <Card className="receipt-card" title={<Typography.Title level={4} style={{ margin: 0, marginTop: 8 }}><ShoppingCartOutlined style={{ marginRight: 8 }} />New Sale</Typography.Title>} bordered={false}>
                         <Form form={form} layout="vertical" onFinish={handleSale} onValuesChange={() => {
                             handleProductChange(form.getFieldValue('productId'))
                         }}>
@@ -203,9 +203,9 @@ const Sales = () => {
                             </Form.Item>
 
                             {costPreview && (
-                                <Card size="small" style={{ marginBottom: 24, background: '#f9fafb', borderRadius: 12, border: '1px solid var(--border)' }}>
-                                    <Text type="secondary" style={{ fontSize: 12, letterSpacing: '0.5px' }}>BUILD COST PREVIEW</Text>
-                                    <div style={{ marginTop: 8 }}>
+                                <div style={{ marginBottom: 24, padding: 16, background: 'rgba(255,255,255,0.5)', borderRadius: 8, border: '1px solid rgba(0,0,0,0.05)' }}>
+                                    <Text type="secondary" style={{ fontSize: 11, letterSpacing: '0.05em', display: 'block', marginBottom: 12 }}>BUILD COST PREVIEW</Text>
+                                    <div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 6 }}>
                                             <Text>Base Build Cost:</Text>
                                             <Text>₱{(costPreview.totalCost * qty).toFixed(2)}</Text>
@@ -217,18 +217,18 @@ const Sales = () => {
                                             </div>
                                         )}
                                         {estimatedProfit !== null && (
-                                            <Divider style={{ margin: '8px 0', borderColor: 'var(--border)' }} />
+                                            <div style={{ margin: '12px 0', borderBottom: '1px dashed var(--border)' }} />
                                         )}
                                         {estimatedProfit !== null && (
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <Text strong>Est. Profit:</Text>
-                                                <Text strong style={{ color: estimatedProfit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                                <Text strong style={{ color: estimatedProfit >= 0 ? 'var(--success)' : 'var(--danger)', fontSize: 15 }}>
                                                     ₱{estimatedProfit.toFixed(2)}
                                                 </Text>
                                             </div>
                                         )}
                                     </div>
-                                </Card>
+                                </div>
                             )}
 
                             <Button type="primary" htmlType="submit" block size="large" loading={submitting} icon={<ShoppingCartOutlined />} style={{ height: 48, fontSize: 16 }}>

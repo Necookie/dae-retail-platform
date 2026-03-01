@@ -58,7 +58,7 @@ const Reports = () => {
         {
             title: 'Profit',
             dataIndex: 'profit',
-            render: (v) => <Text style={{ color: parseFloat(v) >= 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>₱{parseFloat(v).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</Text>,
+            render: (v) => <Text style={{ color: parseFloat(v) >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>₱{parseFloat(v).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</Text>,
         },
         {
             title: 'Payment',
@@ -73,7 +73,7 @@ const Reports = () => {
         { title: 'Product', dataIndex: 'productName' },
         { title: 'Qty Sold', dataIndex: 'totalQuantity' },
         { title: 'Revenue', dataIndex: 'totalRevenue', render: (v) => `₱${v?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}` },
-        { title: 'Profit', dataIndex: 'totalProfit', render: (v) => <Text style={{ color: '#10b981', fontWeight: 600 }}>₱{v?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</Text> },
+        { title: 'Profit', dataIndex: 'totalProfit', render: (v) => <Text style={{ color: 'var(--success)', fontWeight: 600 }}>₱{v?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</Text> },
     ]
 
     const inventoryColumns = [
@@ -143,29 +143,29 @@ const Reports = () => {
             <Spin spinning={loading}>
                 <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card className="stat-card" style={{ borderTop: '3px solid #4f46e5' }}>
-                            <Statistic title="Total Revenue" value={revenue?.totalRevenue ?? 0} prefix="₱" precision={2} valueStyle={{ color: '#4f46e5', fontWeight: 700 }} />
+                        <Card className="stat-card" style={{ borderTop: '3px solid var(--primary)' }}>
+                            <Statistic title="Total Revenue" value={revenue?.totalRevenue ?? 0} prefix="₱" precision={2} valueStyle={{ color: 'var(--primary)', fontWeight: 700 }} />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card className="stat-card" style={{ borderTop: '3px solid #10b981' }}>
-                            <Statistic title="Total Profit" value={revenue?.totalProfit ?? 0} prefix="₱" precision={2} valueStyle={{ color: '#10b981', fontWeight: 700 }} />
+                        <Card className="stat-card" style={{ borderTop: '3px solid var(--success)' }}>
+                            <Statistic title="Total Profit" value={revenue?.totalProfit ?? 0} prefix="₱" precision={2} valueStyle={{ color: 'var(--success)', fontWeight: 700 }} />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card className="stat-card" style={{ borderTop: '3px solid #f59e0b' }}>
-                            <Statistic title="Profit Margin" value={revenue?.profitMargin ?? 0} suffix="%" valueStyle={{ color: '#f59e0b', fontWeight: 700 }} />
+                        <Card className="stat-card" style={{ borderTop: '3px solid var(--warning)' }}>
+                            <Statistic title="Profit Margin" value={revenue?.profitMargin ?? 0} suffix="%" valueStyle={{ color: 'var(--warning)', fontWeight: 700 }} />
                         </Card>
                     </Col>
                     <Col xs={24} sm={12} lg={6}>
-                        <Card className="stat-card" style={{ borderTop: '3px solid #6366f1' }}>
-                            <Statistic title="Inventory Value" value={inventory?.totalValue ?? 0} prefix="₱" precision={2} valueStyle={{ color: '#6366f1', fontWeight: 700 }} />
+                        <Card className="stat-card" style={{ borderTop: '3px solid var(--sidebar-text)' }}>
+                            <Statistic title="Inventory Value" value={inventory?.totalValue ?? 0} prefix="₱" precision={2} valueStyle={{ color: 'var(--sidebar-text)', fontWeight: 700 }} />
                         </Card>
                     </Col>
                 </Row>
 
-                <Card style={{ borderRadius: 12 }}>
-                    <Tabs items={items} />
+                <Card style={{ borderRadius: 12, border: '1px solid var(--border)' }}>
+                    <Tabs items={items} size="large" tabBarGutter={32} />
                 </Card>
             </Spin>
         </div>

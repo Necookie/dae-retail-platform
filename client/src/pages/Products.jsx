@@ -136,7 +136,7 @@ const Products = () => {
                 const margin = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
                 return (
                     <div>
-                        <Text type="success">₱{profit.toFixed(2)}</Text>
+                        <Text style={{ color: profit >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>₱{profit.toFixed(2)}</Text>
                         <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>{margin.toFixed(1)}%</Text>
                     </div>
                 );
@@ -229,9 +229,9 @@ const Products = () => {
 
             {/* View Build Drawer */}
             <Drawer
-                title={<Text strong style={{ fontSize: 18 }}>Build Breakdown</Text>}
+                title={<Typography.Title level={4} style={{ margin: 0 }}>Atelier Spec Sheet</Typography.Title>}
                 placement="right"
-                width={480}
+                width={500}
                 onClose={() => setCostModal({ open: false, data: null, loading: false })}
                 open={costModal.open}
             >
@@ -239,31 +239,33 @@ const Products = () => {
                     <div style={{ textAlign: 'center', padding: 80 }}><Text type="secondary">Loading components...</Text></div>
                 ) : costModal.data ? (
                     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <div style={{ flex: 1 }}>
-                            <Text type="secondary" style={{ display: 'block', marginBottom: 16, fontSize: 13 }}>
-                                COMPONENTS LIST
+                        <div style={{ flex: 1, padding: '0 8px' }}>
+                            <Text type="secondary" style={{ display: 'block', marginBottom: 24, fontSize: 13, letterSpacing: '0.05em' }}>
+                                COMPONENTS REQUIREMENT
                             </Text>
                             {costModal.data.breakdown.map((item, i) => (
-                                <Row key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+                                <Row key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
                                     <Col span={16}>
-                                        <Text strong>{item.materialName}</Text>
-                                        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                                        <Text strong style={{ fontSize: 15 }}>{item.materialName}</Text>
+                                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
                                             {item.quantityUsed} {item.unit} @ ₱{(item.lineCost / item.quantityUsed).toFixed(2)}
                                         </div>
                                     </Col>
-                                    <Col span={8} style={{ textAlign: 'right' }}>
-                                        <Text strong style={{ color: 'var(--text-primary)' }}>₱{item.lineCost.toFixed(2)}</Text>
+                                    <Col span={8} style={{ textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                        <Text strong style={{ color: 'var(--text-primary)', fontSize: 15 }}>₱{item.lineCost.toFixed(2)}</Text>
                                     </Col>
                                 </Row>
                             ))}
                         </div>
 
-                        <div style={{ background: 'var(--content-bg)', padding: 20, borderRadius: 12, marginTop: 24 }}>
-                            <Row style={{ marginBottom: 8 }}>
-                                <Col span={16}><Text>Base Build Cost</Text></Col>
+                        <div className="receipt-card" style={{ padding: 24, margin: '24px 8px 8px 8px' }}>
+                            <Text strong style={{ fontSize: 16, display: 'block', marginBottom: 16, borderBottom: '2px solid var(--text-primary)', paddingBottom: 8 }}>
+                                Financial Summary
+                            </Text>
+                            <Row style={{ marginBottom: 12 }}>
+                                <Col span={16}><Text style={{ color: 'var(--text-secondary)' }}>Base Build Cost</Text></Col>
                                 <Col span={8} style={{ textAlign: 'right' }}><Text strong>₱{costModal.data.totalCost.toFixed(2)}</Text></Col>
                             </Row>
-                            <Divider style={{ margin: '12px 0', borderColor: 'var(--border)' }} />
                             <Row>
                                 <Col span={16}><Text strong style={{ fontSize: 16 }}>Total Cost</Text></Col>
                                 <Col span={8} style={{ textAlign: 'right' }}>

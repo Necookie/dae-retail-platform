@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
     Table, Button, Modal, Form, Input, InputNumber, Drawer, Tag, Space,
-    Typography, Popconfirm, message, Badge, Tooltip, Select,
+    Typography, Popconfirm, message, Badge, Tooltip, Select, Row, Col,
 } from 'antd'
 import { PlusOutlined, EditOutlined, ShoppingOutlined, HistoryOutlined, DeleteOutlined } from '@ant-design/icons'
 import api from '../api/axios'
@@ -102,7 +102,7 @@ const Inventory = () => {
                 <div>
                     <Text strong style={{ fontSize: 14 }}>{name}</Text>
                     {parseFloat(r.quantityOnHand) <= parseFloat(r.reorderLevel) && (
-                        <Tag color="warning" style={{ marginLeft: 12, fontSize: 11, border: 'none', background: '#fdf6e3', color: '#ae8b51' }}>LOW STOCK</Tag>
+                        <Tag className="status-restock" style={{ marginLeft: 12 }}>NEEDS RESTOCK</Tag>
                     )}
                 </div>
             ),
@@ -125,16 +125,14 @@ const Inventory = () => {
             render: (v, r) => `${parseFloat(v).toFixed(2)} ${r.unit}`,
         },
         {
-            title: 'Avg Cost/Unit',
-            dataIndex: 'weightedAvgCost',
-            key: 'avgCost',
-            render: (v) => `₱${parseFloat(v).toFixed(4)}`,
-        },
-        {
-            title: 'Latest Cost',
-            dataIndex: 'latestUnitCost',
-            key: 'latestCost',
-            render: (v) => `₱${parseFloat(v).toFixed(4)}`,
+            title: 'Unit Cost',
+            key: 'costs',
+            render: (_, r) => (
+                <div>
+                    <Text strong>Avg: ₱{parseFloat(r.weightedAvgCost).toFixed(4)}</Text>
+                    <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>Latest: ₱{parseFloat(r.latestUnitCost).toFixed(4)}</Text>
+                </div>
+            )
         },
         {
             title: 'Actions',
@@ -220,34 +218,41 @@ const Inventory = () => {
                 </Form>
             </Modal>
 
-            {/* Purchase Drawer */}
             <Drawer
-                title={`Purchases — ${purchaseDrawer.material?.name}`}
+                title={<Typography.Title level={4} style={{ margin: 0 }}>Restock & History — {purchaseDrawer.material?.name}</Typography.Title>}
                 open={purchaseDrawer.open}
                 onClose={() => setPurchaseDrawer({ open: false, material: null })}
                 width={600}
             >
-                <Text strong style={{ display: 'block', marginBottom: 12 }}>Record New Purchase</Text>
-                <Form form={purchaseForm} layout="vertical" onFinish={handlePurchase}>
-                    <Form.Item name="quantity" label="Quantity" rules={[{ required: true }]}>
-                        <InputNumber min={0.0001} step={0.01} style={{ width: '100%' }} />
-                    </Form.Item>
-                    <Form.Item name="unitCost" label="Unit Cost (₱)" rules={[{ required: true }]}>
-                        <InputNumber min={0} step={0.0001} style={{ width: '100%' }} prefix="₱" />
-                    </Form.Item>
-                    <Form.Item name="supplier" label="Supplier">
-                        <Input placeholder="Supplier name (optional)" />
-                    </Form.Item>
-                    <Form.Item name="notes" label="Notes">
-                        <Input.TextArea rows={2} />
-                    </Form.Item>
-                    <Button type="primary" htmlType="submit" block icon={<ShoppingOutlined />}>
-                        Record Purchase & Update Stock
-                    </Button>
-                </Form>
+                <div style={{ background: 'var(--content-bg)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', marginBottom: 32 }}>
+                    <Text strong style={{ fontSize: 15, display: 'block', marginBottom: 16 }}>Record New Intakes</Text>
+                    <Form form={purchaseForm} layout="vertical" onFinish={handlePurchase}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="quantity" label="Quantity" rules={[{ required: true }]}>
+                                    <InputNumber min={0.0001} step={0.01} style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="unitCost" label="Unit Cost (₱)" rules={[{ required: true }]}>
+                                    <InputNumber min={0} step={0.0001} style={{ width: '100%' }} prefix="₱" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="supplier" label="Supplier">
+                            <Input placeholder="Supplier name (optional)" />
+                        </Form.Item>
+                        <Form.Item name="notes" label="Notes" style={{ marginBottom: 24 }}>
+                            <Input.TextArea rows={2} />
+                        </Form.Item>
+                        <Button type="primary" size="large" htmlType="submit" block icon={<ShoppingOutlined />}>
+                            Record Purchase & Update Stock
+                        </Button>
+                    </Form>
+                </div>
 
-                <div style={{ marginTop: 24 }}>
-                    <Text strong>Purchase History</Text>
+                <div>
+                    <Text strong style={{ fontSize: 15, display: 'block', marginBottom: 12 }}>Purchase Ledger</Text>
                     <Table
                         dataSource={purchases}
                         columns={purchaseColumns}

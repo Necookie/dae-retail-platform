@@ -57,7 +57,7 @@ const Dashboard = () => {
             title: 'Profit',
             dataIndex: 'profit',
             key: 'profit',
-            render: (v) => <Text style={{ color: parseFloat(v) >= 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+            render: (v) => <Text style={{ color: parseFloat(v) >= 0 ? '#7e8f7a' : '#b06a6a', fontWeight: 600 }}>
                 ₱{parseFloat(v).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
             </Text>,
         },
@@ -96,7 +96,7 @@ const Dashboard = () => {
                         title="Today's Revenue"
                         value={kpis?.today?.revenue ?? 0}
                         prefix="₱"
-                        color="#4f46e5"
+                        color="#b57b6f"
                     />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
@@ -104,7 +104,7 @@ const Dashboard = () => {
                         title="Today's Profit"
                         value={kpis?.today?.profit ?? 0}
                         prefix="₱"
-                        color="#10b981"
+                        color="#7e8f7a"
                     />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
@@ -112,31 +112,49 @@ const Dashboard = () => {
                         title="Monthly Revenue"
                         value={kpis?.month?.revenue ?? 0}
                         prefix="₱"
-                        color="#f59e0b"
+                        color="#d4b78c"
                     />
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                     <KpiCard
                         title="Low Stock Items"
                         value={kpis?.lowStockCount ?? 0}
-                        color="#ef4444"
+                        color="#b06a6a"
                         suffix="items"
                     />
                 </Col>
             </Row>
 
-            <Card
-                title={<><ShoppingCartOutlined style={{ marginRight: 8 }} />Recent Sales</>}
-                style={{ borderRadius: 12 }}
-            >
-                <Table
-                    dataSource={recentSales}
-                    columns={salesColumns}
-                    rowKey="id"
-                    pagination={false}
-                    size="middle"
-                />
-            </Card>
+            <Row gutter={[24, 24]}>
+                <Col xs={24} lg={16}>
+                    <Card
+                        title={<><ShoppingCartOutlined style={{ marginRight: 8 }} />Recent Sales</>}
+                        style={{ borderRadius: 12, height: '100%' }}
+                    >
+                        <Table
+                            dataSource={recentSales}
+                            columns={salesColumns}
+                            rowKey="id"
+                            pagination={false}
+                            size="middle"
+                            scroll={{ x: 'max-content' }}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={24} lg={8}>
+                    <Card
+                        title={<><WarningOutlined style={{ marginRight: 8 }} />Pending Production</>}
+                        style={{ borderRadius: 12, height: '100%', background: 'var(--card-bg)' }}
+                    >
+                        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                            <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                                No urgent production pending.
+                            </Text>
+                            <Tag className="status-pending">All caught up</Tag>
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
         </div>
     )
 }

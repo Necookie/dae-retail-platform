@@ -7,17 +7,17 @@ import './index.css'
 
 const theme = {
     token: {
-        colorPrimary: '#c08497', // Muted rose
-        colorSuccess: '#a9bca5', // Muted sage
-        colorWarning: '#e9d6af', // Soft amber
-        colorError: '#d99a9a', // Dusty rose
-        borderRadius: 12,
-        borderRadiusLG: 16,
+        colorPrimary: '#b57b6f', // Terracotta / Dusty Rose
+        colorSuccess: '#7e8f7a', // Muted Sage
+        colorWarning: '#d4b78c', // Soft Amber / Parchment
+        colorError: '#b06a6a', // Muted Red
+        borderRadius: 8,
+        borderRadiusLG: 12,
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
         colorBgContainer: '#ffffff',
-        colorBgLayout: '#F8F6F2', // Warm off-white
-        colorBorder: '#eaeaea', // Light neutral gray
-        colorText: '#2a2a2a', // Near-black charcoal
+        colorBgLayout: '#F5F2EB', // Warm off-white / parchment back
+        colorBorder: '#e8e4db', // Warmer light neutral
+        colorText: '#2b2624', // Warmer charcoal
     },
 }
 

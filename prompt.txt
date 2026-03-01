@@ -1,0 +1,111 @@
+UI update prompt for the current Dae Artesania retail platform:
+
+You are updating the frontend UI of an existing internal retail operations system for Dae Artesania. Do not redesign it as a generic dashboard. Preserve the current business domain: handcrafted arrangement production, raw-material inventory, costing, sales, and internal staff workflows.
+
+Project context:
+- Frontend stack: React + Vite + Ant Design
+- Current pages: Login, Dashboard, Inventory, Products, Sales, Reports, Settings
+- Current domain language: arrangements, raw materials, purchases, production status, payment status, sales snapshots, costing methods
+- Current backend capabilities already exist for:
+  - materials CRUD and purchase history
+  - products or arrangements CRUD with BOM
+  - product cost preview
+  - sales recording
+  - reports
+  - settings
+  - users API exists, but no users page in the frontend yet
+
+Important product direction from the progress docs:
+- Prioritize operational clarity over decorative UI
+- The current UI should be improved to better support real workflows, not just look cleaner
+- There is an API/UI mismatch in some areas, so the UI should expose missing operational actions where appropriate
+- The design should support future expansion into:
+  - user management
+  - production status management
+  - payment update workflows
+  - stock movement visibility
+  - stronger role-aware experiences
+
+Main UI goals:
+1. Improve usability and information hierarchy across the current pages
+2. Make inventory, production, and sales actions feel operationally clear and fast
+3. Prepare the interface for the next roadmap phases without forcing a full product rewrite
+4. Keep the current warm artisanal brand feel, but make it more deliberate and premium
+5. Avoid generic SaaS dashboard patterns
+
+Visual direction:
+- Keep a refined artisanal retail identity, not fintech, crypto, or enterprise blue
+- Use warm neutrals, refined earthy tones, soft rose, muted sage, parchment, kraft-paper, atelier-inspired accents
+- Make the UI feel intentional, elegant, and tactile
+- Avoid overusing flat white cards on empty backgrounds
+- Use depth, layered surfaces, soft borders, strong section rhythm, and better spacing
+- Typography should feel curated and premium, not default dashboard typography
+- Motion should be subtle and meaningful
+
+Functional priorities for the UI update:
+- Dashboard
+  - Make KPIs easier to scan
+  - Emphasize low-stock alerts, recent sales, and pending production work
+  - Improve summary-card hierarchy and actionability
+
+- Inventory page
+  - Make low-stock materials visually obvious
+  - Improve purchase-history and restock workflow clarity
+  - Better distinguish stock quantity, reorder threshold, average cost, and latest cost
+
+- Products / Arrangements page
+  - Present BOM structure more clearly
+  - Improve arrangement creation and editing flow
+  - Make cost preview and margin understanding easier
+  - Prepare the page for future production-status actions
+
+- Sales page
+  - Improve the “new sale” workflow so it feels like an operational POS form, not just a generic form card
+  - Make cost preview, revenue, and estimated profit easier to compare
+  - Improve sales history readability and filtering
+
+- Reports page
+  - Improve readability of revenue, profit, top products, and inventory value
+  - Make tabs, summary metrics, and tables feel more cohesive
+  - Prepare space for future charts and exports
+
+- Settings page
+  - Make system settings clearer and more trustworthy
+  - Improve the costing-method explanation blocks
+  - Prepare the layout so future admin settings and user management can fit naturally
+
+UX requirements:
+- Desktop-first, but still responsive on tablet and mobile
+- Reduce visual clutter
+- Make primary actions obvious
+- Use consistent status treatments for:
+  - PENDING
+  - IN_PRODUCTION
+  - COMPLETED
+  - CANCELLED
+  - UNPAID
+  - PARTIAL
+  - PAID
+  - REFUNDED
+- Make dangerous actions feel intentional and safe
+- Improve empty states, loading states, and form guidance
+
+Constraints:
+- Respect the existing React + Ant Design codebase
+- Improve the current UI structure instead of replacing the product architecture
+- Do not introduce a completely unrelated design system
+- Do not make the app feel like a generic template
+- Do not remove operational density where the staff needs data visibility
+
+Deliverable expectation:
+- Update the UI to feel more polished, premium, and workflow-oriented
+- Keep the business logic assumptions intact
+- Produce a UI direction that fits the roadmap in PROGRESS.md and PHASE_1_BACKLOG.md
+
+If proposing implementation changes, prefer:
+- reusable layout patterns
+- clearer page headers
+- more structured data cards
+- stronger table hierarchy
+- better status chips and summary panels
+- UI affordances for the next roadmap features without overbuilding them now
