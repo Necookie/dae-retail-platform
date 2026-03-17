@@ -1,54 +1,55 @@
-# POS & Inventory System
+# Dae Artesania Retail Platform
 
-Internal POS, costing, and inventory system for handmade arrangements built from raw materials.
+Internal POS, inventory, and costing system for handmade floral and fuzzywire arrangements.
 
-## Current Status
+## Overview
 
-The repository currently includes:
+This repository contains a small monorepo with:
 
-- A React + Vite client with login, dashboard, inventory, arrangements, sales, reports, and settings screens
-- An Express + Prisma API with JWT auth, role checks, and PostgreSQL persistence
-- Core business flows for material purchasing, BOM-based product costing, sales snapshots, and inventory reservations
+- `client`: React + Vite frontend
+- `server`: Express + Prisma API
+- `shared`: shared constants
 
-The codebase is functional for a seeded local/demo setup, but it is still in a stabilization phase. Validation, tests, and some UI coverage are still missing.
+The current build supports authenticated operations for inventory, arrangements, sales, reports, settings, and user management. It is usable for a seeded local/demo workflow, but it is still in an active stabilization phase.
 
-## Implemented Features
+## Current Capabilities
 
-- Authentication with JWT login and persisted client session
-- Role values for `ADMIN`, `MANAGER`, and `STAFF`
-- Raw material CRUD, low-stock highlighting, purchase history, and purchase intake
-- Weighted average and latest purchase cost tracking
-- Arrangement/product CRUD with BOM components
-- Product cost preview endpoint and client cost drawer
-- Sales recording with immutable production-cost and material-cost snapshots
-- Revenue, inventory value, top products, and dashboard KPI reports
-- Settings storage for costing method, tax rate, currency, and business name
-- Inventory reservation flow tied to product production status changes
+- JWT authentication with persisted client session
+- Role support for `ADMIN`, `MANAGER`, and `STAFF`
+- Role-aware navigation and protected routes
+- Raw material management with per-material variants
+- Purchase intake with stock updates and cost recalculation
+- Product or arrangement management with BOM-style components
+- Cost previews based on the configured costing method
+- Sales recording with immutable production-cost snapshots
+- Payment-status updates for existing sales
+- Dashboard and report screens for manager/admin roles
+- Settings management for business name, costing method, tax rate, and currency
+- User management screen with admin write access and manager read access
 
-## Partial Or Missing Areas
+## Current Gaps
 
-- No frontend users page even though `/api/users` exists
-- Sidebar and route visibility are not role-aware
-- Dashboard depends on `/api/reports/dashboard`, which is restricted to `ADMIN` and `MANAGER`, so `STAFF` users are not fully supported in the current UI flow
-- Product status updates exist in the API and page state, but the action is not surfaced in the visible products table
-- Request validation is still controller-level and inconsistent
-- There are no automated tests
-- Several files still contain mojibake or encoding issues in UI strings and console output
+- No automated tests yet
+- Request validation is still inconsistent across controllers
+- Some files still contain mojibake or encoding issues
+- Domain rules around production lifecycle and sale eligibility still need hardening
+- Deployment, CI, and production operations documentation are not in place yet
 
 ## Tech Stack
 
-- Client: React 18, Vite, Ant Design, Zustand, React Router, Axios
-- Server: Node.js, Express, Prisma, PostgreSQL, JWT, bcrypt
-- Shared: business constants in [`shared/constants.js`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/shared/constants.js)
+- Frontend: React 18, Vite, React Router, Ant Design, Zustand, Axios
+- Backend: Node.js, Express, Prisma, PostgreSQL, JWT, bcrypt
 
 ## Project Structure
 
 ```text
 .
 |-- client/
+|   |-- public/
 |   |-- src/
 |   |   |-- api/
-|   |   |-- components/layout/
+|   |   |-- components/
+|   |   |-- constants/
 |   |   |-- pages/
 |   |   `-- store/
 |   `-- vite.config.js
@@ -64,6 +65,7 @@ The codebase is functional for a seeded local/demo setup, but it is still in a s
 |       |-- services/
 |       `-- utils/
 |-- shared/
+|-- documentation/
 |-- PROGRESS.md
 `-- PHASE_1_BACKLOG.md
 ```
@@ -72,9 +74,17 @@ The codebase is functional for a seeded local/demo setup, but it is still in a s
 
 - Node.js 18+
 - npm 9+
-- PostgreSQL database
+- PostgreSQL
 
-## Installation
+## Install
+
+From the repository root:
+
+```bash
+npm run install:all
+```
+
+Equivalent manual install:
 
 ```bash
 npm install
@@ -82,35 +92,35 @@ npm --prefix client install
 npm --prefix server install
 ```
 
-Or:
-
-```bash
-npm run install:all
-```
-
 ## Environment Setup
 
-Copy the root example file into `server/.env`:
+Create `server/.env` from the example file:
 
 ```bash
 cp .env.example server/.env
 ```
 
-Required variables used by the current server:
+PowerShell alternative:
+
+```powershell
+Copy-Item .env.example server/.env
+```
+
+Required server variables:
 
 | Variable | Required | Notes |
-|---|---|---|
-| `DATABASE_URL` | Yes | Prisma app connection |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Prisma application connection |
 | `DIRECT_URL` | Yes for migrations | Prisma direct connection |
-| `JWT_SECRET` | Yes | Used to sign login tokens |
+| `JWT_SECRET` | Yes | Token signing secret |
 | `PORT` | No | Defaults to `3000` |
 | `CORS_ORIGIN` | No | Defaults to `http://localhost:5173` |
 
-Replace any example values before using a real environment.
+Replace all example values before using a real environment.
 
-## Database Setup
+## Database
 
-Run migrations from the root:
+Run the initial migration:
 
 ```bash
 npm run migrate
@@ -122,19 +132,32 @@ Seed demo data:
 npm run seed
 ```
 
-The current seed creates:
+The seed currently creates:
 
-- 1 admin user: `admin@pos.local` / `admin123`
-- 4 sample raw materials
-- 1 sample arrangement with BOM
-- 4 base system settings
+- Admin user: `admin@pos.local` / `admin123`
+- Four sample raw materials with variants
+- One sample arrangement with BOM components
+- Base system settings
 
-## Running The App
+## Run Locally
 
 Start client and server together:
 
 ```bash
 npm run dev
+```
+
+Or run them separately:
+
+```bash
+npm run dev:client
+npm run dev:server
+```
+
+Production-style API start:
+
+```bash
+npm start
 ```
 
 Default local URLs:
@@ -143,26 +166,30 @@ Default local URLs:
 - API: `http://localhost:3000`
 - Health check: `http://localhost:3000/api/health`
 
-Individual commands:
+## Main Screens
 
-```bash
-npm run dev:client
-npm run dev:server
-npm start
-```
+- `Dashboard`: manager/admin KPI summary
+- `Inventory`: materials, variants, purchases, and stock levels
+- `Arrangements`: product catalog, BOM editing, cost viewing, and status updates
+- `POS / Sales`: sale entry, history, date filtering, and payment updates
+- `Reports`: revenue, inventory value, top products, and dashboard reporting
+- `Users`: user listing plus admin-only create, edit, and deactivate actions
+- `Settings`: business and costing configuration
 
-## Main API Surface
+## API Surface
 
-Implemented routes include:
+Implemented route groups:
 
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+- `GET|POST|PUT|DELETE /api/users`
 - `GET|POST|PUT|DELETE /api/materials`
 - `GET|POST /api/materials/:id/purchases`
 - `GET|POST|PUT|DELETE /api/products`
 - `GET /api/products/:id/cost`
 - `PATCH /api/products/:id/status`
 - `GET|POST /api/sales`
+- `GET /api/sales/:id`
 - `PATCH /api/sales/:id/payment`
 - `GET /api/reports/dashboard`
 - `GET /api/reports/revenue`
@@ -170,16 +197,16 @@ Implemented routes include:
 - `GET /api/reports/top-products`
 - `GET /api/settings`
 - `PUT /api/settings/:key`
-- `GET|POST|PUT|DELETE /api/users`
 
-## Notes On Current Behavior
+## Role Notes
 
-- Sales use backend-calculated cost snapshots; the client does not compute final profit logic
-- Product production status currently drives inventory reservation side effects
-- Products currently mix catalog data with live production/payment state, which will likely need a later domain refactor
-- The products list still estimates base cost from incomplete product payload data, so displayed list margins are not fully trustworthy
+- `ADMIN`: full access
+- `MANAGER`: access to dashboard, reports, and read-only user management
+- `STAFF`: login, inventory, arrangements, and sales flows; default landing page is `/sales`
 
-## Documentation
+## Related Docs
 
-- Current repo status: [`PROGRESS.md`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/PROGRESS.md)
-- Stabilization backlog: [`PHASE_1_BACKLOG.md`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/PHASE_1_BACKLOG.md)
+- [`PROGRESS.md`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/PROGRESS.md): implementation status and risks
+- [`PHASE_1_BACKLOG.md`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/PHASE_1_BACKLOG.md): stabilization backlog
+- [`documentation/SRS.pdf`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/documentation/SRS.pdf): requirements reference
+- [`documentation/Product Requirements Document.pdf`](/C:/Users/dheyn/Documents/01_Startup/02_DaeArtesania/dae-retail-platform/documentation/Product%20Requirements%20Document.pdf): product context
