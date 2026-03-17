@@ -1,0 +1,4 @@
+﻿Seeding test data...
+User created: test@dae.com
+Material created with variants: Test Fuzzy Wire
+Γ£à Seed successful.

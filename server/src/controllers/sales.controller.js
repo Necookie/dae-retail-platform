@@ -21,7 +21,7 @@ const getSales = asyncHandler(async (req, res) => {
             include: {
                 product: { select: { id: true, name: true, sku: true } },
                 soldBy: { select: { id: true, name: true } },
-                materialSnapshots: { include: { material: { select: { id: true, name: true, unit: true } } } },
+                materialSnapshots: { include: { material: { select: { id: true, name: true, unit: true } }, variant: { select: { id: true, name: true, sku: true } } } },
             },
             orderBy: { saleDate: 'desc' },
             skip: (+page - 1) * +limit,
@@ -39,7 +39,7 @@ const getSale = asyncHandler(async (req, res) => {
         include: {
             product: true,
             soldBy: { select: { id: true, name: true } },
-            materialSnapshots: { include: { material: true } },
+            materialSnapshots: { include: { material: true, variant: true } },
         },
     });
     if (!sale) throw createError('Sale not found', 404, 'NOT_FOUND');

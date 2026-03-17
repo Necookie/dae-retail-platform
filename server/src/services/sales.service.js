@@ -54,7 +54,7 @@ const createSale = async ({ productId, quantity = 1, paymentStatus = 'UNPAID', n
             await tx.saleMaterialSnapshot.create({
                 data: {
                     saleId: sale.id,
-                    materialId: item.materialId,
+                    variantId: item.variantId,
                     unitCostSnapshot: item.unitCostSnapshot,
                     quantityUsed: item.quantityUsed * quantity,
                 },
@@ -78,7 +78,7 @@ const createSale = async ({ productId, quantity = 1, paymentStatus = 'UNPAID', n
             costingMethod,
             breakdown,
         };
-    });
+    }, { maxWait: 10000, timeout: 30000 });
 };
 
 module.exports = { createSale, getCostingMethod };

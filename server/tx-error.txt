@@ -1,0 +1,13 @@
+﻿--- FETCHING MATERIALS ---
+prisma:info Starting a postgresql pool with 9 connections.
+prisma:error 
+Invalid `prisma.rawMaterial.findFirst()` invocation in
+C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\test-db-tx.js:7:52
+
+  4 async function run() {
+  5     try {
+  6         console.log('--- FETCHING MATERIALS ---');
+ΓåÆ 7         const fuzzyWire = await prisma.rawMaterial.findFirst(
+Can't reach database server at `ep-frosty-frog-ai90ctjk-pooler.c-4.us-east-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-frosty-frog-ai90ctjk-pooler.c-4.us-east-1.aws.neon.tech:5432`.

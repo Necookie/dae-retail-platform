@@ -12,13 +12,13 @@ const validateStockAvailability = async (productId, tx) => {
     const db = tx || prisma;
     const bom = await db.productMaterial.findMany({
         where: { productId },
-        include: { material: true },
+        include: { material: true, variant: true },
     });
 
     for (const item of bom) {
-        if (parseFloat(item.material.quantityOnHand) < parseFloat(item.quantityRequired)) {
+        if (parseFloat(item.variant.quantityOnHand) < parseFloat(item.quantityRequired)) {
             throw createError(
-                `Insufficient stock for: ${item.material.name}. Available: ${item.material.quantityOnHand} ${item.material.unit}, Required: ${item.quantityRequired} ${item.material.unit}`,
+                `Insufficient stock for: ${item.material.name} - ${item.variant.name}. Available: ${item.variant.quantityOnHand} ${item.material.unit}, Required: ${item.quantityRequired} ${item.material.unit}`,
                 400,
                 'INSUFFICIENT_STOCK'
             );
@@ -38,8 +38,8 @@ const reserveMaterials = async (productId) => {
 
         for (const item of bom) {
             // Deduct from on-hand (reserved)
-            await tx.rawMaterial.update({
-                where: { id: item.materialId },
+            await tx.materialVariant.update({
+                where: { id: item.variantId },
                 data: { quantityOnHand: { decrement: item.quantityRequired } },
             });
 
@@ -47,7 +47,7 @@ const reserveMaterials = async (productId) => {
             await tx.inventoryReservation.create({
                 data: {
                     productId,
-                    materialId: item.materialId,
+                    variantId: item.variantId,
                     reservedQty: item.quantityRequired,
                     status: 'RESERVED',
                 },
@@ -59,13 +59,13 @@ const reserveMaterials = async (productId) => {
                     type: 'RESERVATION',
                     referenceId: productId,
                     amount: 0,
-                    notes: `Reserved ${item.quantityRequired} ${item.material.unit} of ${item.material.name} for product #${productId}`,
+                    notes: `Reserved ${item.quantityRequired} ${item.material.unit} of ${item.material.name} - ${item.variant.name} for product #${productId}`,
                 },
             });
         }
 
         return { reserved: true, itemCount: bom.length };
-    });
+    }, { maxWait: 10000, timeout: 30000 });
 };
 
 /**
@@ -95,7 +95,7 @@ const confirmDeduction = async (productId) => {
         }
 
         return { deducted: true, itemCount: reservations.length };
-    });
+    }, { maxWait: 10000, timeout: 30000 });
 };
 
 /**
@@ -110,8 +110,8 @@ const releaseReservations = async (productId) => {
 
         for (const res of reservations) {
             // Return to on-hand
-            await tx.rawMaterial.update({
-                where: { id: res.materialId },
+            await tx.materialVariant.update({
+                where: { id: res.variantId },
                 data: { quantityOnHand: { increment: res.reservedQty } },
             });
 
@@ -131,7 +131,7 @@ const releaseReservations = async (productId) => {
         }
 
         return { released: true, itemCount: reservations.length };
-    });
+    }, { maxWait: 10000, timeout: 30000 });
 };
 
 module.exports = { reserveMaterials, confirmDeduction, releaseReservations, validateStockAvailability };

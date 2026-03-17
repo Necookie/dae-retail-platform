@@ -68,7 +68,24 @@ model User {
 model RawMaterial {
   id              Int      @id @default(autoincrement())
   name            String
+  category        String?
   unit            String
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  variants              MaterialVariant[]
+  productMaterials      ProductMaterial[]
+
+  @@map("raw_materials")
+}
+
+model MaterialVariant {
+  id              Int      @id @default(autoincrement())
+  materialId      Int      @map("material_id")
+  material        RawMaterial @relation(fields: [materialId], references: [id])
+  name            String
+  sku             String?
   quantityOnHand  Decimal  @default(0) @map("quantity_on_hand") @db.Decimal(12, 4)
   reorderLevel    Decimal  @default(0) @map("reorder_level") @db.Decimal(12, 4)
   manualUnitCost  Decimal? @map("manual_unit_cost") @db.Decimal(12, 4)
@@ -83,20 +100,20 @@ model RawMaterial {
   saleMaterialSnapshots SaleMaterialSnapshot[]
   inventoryReservations InventoryReservation[]
 
-  @@map("raw_materials")
+  @@map("material_variants")
 }
 
 model Purchase {
-  id           Int         @id @default(autoincrement())
-  materialId   Int         @map("material_id")
-  material     RawMaterial @relation(fields: [materialId], references: [id])
+  id           Int             @id @default(autoincrement())
+  variantId    Int             @map("variant_id")
+  variant      MaterialVariant @relation(fields: [variantId], references: [id])
   supplier     String?
-  quantity     Decimal     @db.Decimal(12, 4)
-  unitCost     Decimal     @map("unit_cost") @db.Decimal(12, 4)
-  totalCost    Decimal     @map("total_cost") @db.Decimal(12, 4)
-  purchaseDate DateTime    @default(now()) @map("purchase_date")
+  quantity     Decimal         @db.Decimal(12, 4)
+  unitCost     Decimal         @map("unit_cost") @db.Decimal(12, 4)
+  totalCost    Decimal         @map("total_cost") @db.Decimal(12, 4)
+  purchaseDate DateTime        @default(now()) @map("purchase_date")
   notes        String?
-  createdAt    DateTime    @default(now()) @map("created_at")
+  createdAt    DateTime        @default(now()) @map("created_at")
 
   @@index([purchaseDate])
   @@map("purchases")
@@ -122,13 +139,15 @@ model Product {
 }
 
 model ProductMaterial {
-  productId        Int         @map("product_id")
-  materialId       Int         @map("material_id")
-  product          Product     @relation(fields: [productId], references: [id])
-  material         RawMaterial @relation(fields: [materialId], references: [id])
-  quantityRequired Decimal     @map("quantity_required") @db.Decimal(12, 4)
+  productId        Int             @map("product_id")
+  materialId       Int             @map("material_id") // Keep this to quickly filter by base type (Optional, but keeping to avoid too many cascading changes)
+  variantId        Int             @map("variant_id")
+  product          Product         @relation(fields: [productId], references: [id])
+  material         RawMaterial     @relation(fields: [materialId], references: [id])
+  variant          MaterialVariant @relation(fields: [variantId], references: [id])
+  quantityRequired Decimal         @map("quantity_required") @db.Decimal(12, 4)
 
-  @@id([productId, materialId])
+  @@id([productId, variantId])
   @@map("product_materials")
 }
 
@@ -155,13 +174,13 @@ model Sales {
 }
 
 model SaleMaterialSnapshot {
-  id               Int         @id @default(autoincrement())
-  saleId           Int         @map("sale_id")
-  sale             Sales       @relation(fields: [saleId], references: [id])
-  materialId       Int         @map("material_id")
-  material         RawMaterial @relation(fields: [materialId], references: [id])
-  unitCostSnapshot Decimal     @map("unit_cost_snapshot") @db.Decimal(12, 4)
-  quantityUsed     Decimal     @map("quantity_used") @db.Decimal(12, 4)
+  id               Int             @id @default(autoincrement())
+  saleId           Int             @map("sale_id")
+  sale             Sales           @relation(fields: [saleId], references: [id])
+  variantId        Int             @map("variant_id")
+  variant          MaterialVariant @relation(fields: [variantId], references: [id])
+  unitCostSnapshot Decimal         @map("unit_cost_snapshot") @db.Decimal(12, 4)
+  quantityUsed     Decimal         @map("quantity_used") @db.Decimal(12, 4)
 
   @@map("sale_material_snapshots")
 }
@@ -182,8 +201,8 @@ model InventoryReservation {
   id          Int               @id @default(autoincrement())
   productId   Int               @map("product_id")
   product     Product           @relation(fields: [productId], references: [id])
-  materialId  Int               @map("material_id")
-  material    RawMaterial       @relation(fields: [materialId], references: [id])
+  variantId   Int               @map("variant_id")
+  variant     MaterialVariant   @relation(fields: [variantId], references: [id])
   reservedQty Decimal           @map("reserved_qty") @db.Decimal(12, 4)
   status      ReservationStatus @default(RESERVED)
   createdAt   DateTime          @default(now()) @map("created_at")

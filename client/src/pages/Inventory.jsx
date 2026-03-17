@@ -40,11 +40,11 @@ const Inventory = () => {
         else form.resetFields()
     }
 
-    const openPurchaseDrawer = async (material) => {
-        setPurchaseDrawer({ open: true, material })
+    const openPurchaseDrawer = async (variant, baseMaterial) => {
+        setPurchaseDrawer({ open: true, variant, material: baseMaterial })
         setPurchasesLoading(true)
         try {
-            const { data } = await api.get(`/materials/${material.id}/purchases`)
+            const { data } = await api.get(`/materials/${variant.id}/purchases`)
             setPurchases(data.data)
         } catch {
             message.error('Failed to load purchases')
@@ -72,10 +72,10 @@ const Inventory = () => {
 
     const handlePurchase = async (values) => {
         try {
-            await api.post(`/materials/${purchaseDrawer.material.id}/purchases`, values)
+            await api.post(`/materials/${purchaseDrawer.material.id}/purchases`, { ...values, variantId: purchaseDrawer.variant.id })
             message.success('Purchase recorded & stock updated')
             purchaseForm.resetFields()
-            const { data } = await api.get(`/materials/${purchaseDrawer.material.id}/purchases`)
+            const { data } = await api.get(`/materials/${purchaseDrawer.variant.id}/purchases`)
             setPurchases(data.data)
             fetchMaterials()
         } catch (err) {
@@ -98,57 +98,46 @@ const Inventory = () => {
             title: 'Raw Material',
             dataIndex: 'name',
             key: 'name',
+            sorter: (a, b) => a.name.localeCompare(b.name),
             render: (name, r) => (
                 <div>
                     <Text strong style={{ fontSize: 14 }}>{name}</Text>
-                    {parseFloat(r.quantityOnHand) <= parseFloat(r.reorderLevel) && (
-                        <Tag className="status-restock" style={{ marginLeft: 12 }}>NEEDS RESTOCK</Tag>
+                    {r.variants?.some(v => parseFloat(v.quantityOnHand) <= parseFloat(v.reorderLevel)) && (
+                        <Tag className="status-restock" style={{ marginLeft: 12 }}>VARIANT NEEDS RESTOCK</Tag>
                     )}
                 </div>
             ),
         },
-        { title: 'Unit', dataIndex: 'unit', key: 'unit', width: 80 },
         {
-            title: 'On Hand',
-            dataIndex: 'quantityOnHand',
-            key: 'qty',
-            render: (v, r) => (
-                <Text strong style={{ color: parseFloat(v) <= parseFloat(r.reorderLevel) ? '#ef4444' : '#111827' }}>
-                    {parseFloat(v).toFixed(2)} {r.unit}
-                </Text>
-            ),
+            title: 'Category',
+            dataIndex: 'category',
+            key: 'category',
+            width: 150,
+            render: (v) => v ? <Tag>{v}</Tag> : <Text type="secondary">—</Text>,
+            filters: [
+                { text: 'Core Materials', value: 'Core Materials' },
+                { text: 'Decor Elements', value: 'Decor Elements' },
+                { text: 'Functional Parts', value: 'Functional Parts' },
+                { text: 'Brand Packaging', value: 'Brand Packaging' },
+                { text: 'Workshop Tools', value: 'Workshop Tools' },
+            ],
+            onFilter: (value, record) => record.category === value,
         },
+        { title: 'Unit (Base)', dataIndex: 'unit', key: 'unit', width: 120 },
         {
-            title: 'Reorder Level',
-            dataIndex: 'reorderLevel',
-            key: 'reorder',
-            render: (v, r) => `${parseFloat(v).toFixed(2)} ${r.unit}`,
-        },
-        {
-            title: 'Unit Cost',
-            key: 'costs',
-            render: (_, r) => (
-                <div>
-                    <Text strong>Avg: ₱{parseFloat(r.weightedAvgCost).toFixed(4)}</Text>
-                    <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>Latest: ₱{parseFloat(r.latestUnitCost).toFixed(4)}</Text>
-                </div>
-            )
+            title: 'Total Variants',
+            key: 'totalVariants',
+            render: (_, r) => <Text>{r.variants?.length || 0} variants</Text>,
         },
         {
             title: 'Actions',
             key: 'actions',
-            width: 160,
+            width: 100,
             render: (_, r) => (
                 <Space>
-                    <Tooltip title="Edit"><Button size="small" icon={<EditOutlined />} onClick={() => openMaterialModal(r)} /></Tooltip>
-                    <Tooltip title="Record Purchase">
-                        <Button size="small" type="primary" icon={<ShoppingOutlined />} onClick={() => openPurchaseDrawer(r)} />
-                    </Tooltip>
-                    <Tooltip title="Purchase History">
-                        <Button size="small" icon={<HistoryOutlined />} onClick={() => openPurchaseDrawer(r)} />
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                        <Popconfirm title="Delete this material?" onConfirm={() => handleDeleteMaterial(r.id)}>
+                    <Tooltip title="Edit Base Material"><Button size="small" icon={<EditOutlined />} onClick={() => openMaterialModal(r)} /></Tooltip>
+                    <Tooltip title="Delete Material">
+                        <Popconfirm title="Delete this material and all its variants?" onConfirm={() => handleDeleteMaterial(r.id)}>
                             <Button size="small" danger icon={<DeleteOutlined />} />
                         </Popconfirm>
                     </Tooltip>
@@ -156,6 +145,60 @@ const Inventory = () => {
             ),
         },
     ]
+
+    const expandedRowRender = (material) => {
+        const variantColumns = [
+            {
+                title: 'Variant Name',
+                dataIndex: 'name',
+                key: 'name',
+                render: (v) => <Text strong>{v}</Text>
+            },
+            { title: 'SKU', dataIndex: 'sku', key: 'sku', render: (v) => v || <Text type="secondary">—</Text> },
+            {
+                title: 'On Hand',
+                dataIndex: 'quantityOnHand',
+                key: 'qty',
+                render: (v, r) => (
+                    <Text strong style={{ color: parseFloat(v) <= parseFloat(r.reorderLevel) ? '#ef4444' : '#111827' }}>
+                        {parseFloat(v).toFixed(2)} {material.unit}
+                    </Text>
+                ),
+            },
+            {
+                title: 'Reorder Level',
+                dataIndex: 'reorderLevel',
+                key: 'reorder',
+                render: (v) => `${parseFloat(v).toFixed(2)} ${material.unit}`
+            },
+            {
+                title: 'Unit Cost',
+                key: 'costs',
+                render: (_, r) => (
+                    <div>
+                        <Text strong>Avg: ₱{parseFloat(r.weightedAvgCost).toFixed(4)}</Text>
+                        <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>Latest: ₱{parseFloat(r.latestUnitCost).toFixed(4)}</Text>
+                    </div>
+                )
+            },
+            {
+                title: 'Actions',
+                key: 'actions',
+                width: 120,
+                render: (_, r) => (
+                    <Space>
+                        <Tooltip title="Record Purchase for Variant">
+                            <Button size="small" type="primary" icon={<ShoppingOutlined />} onClick={() => openPurchaseDrawer(r, material)} />
+                        </Tooltip>
+                        <Tooltip title="Purchase History">
+                            <Button size="small" icon={<HistoryOutlined />} onClick={() => openPurchaseDrawer(r, material)} />
+                        </Tooltip>
+                    </Space>
+                ),
+            },
+        ];
+        return <Table columns={variantColumns} dataSource={material.variants || []} pagination={false} rowKey="id" size="small" style={{ margin: '8px 16px' }} />;
+    };
 
     const purchaseColumns = [
         { title: 'Date', dataIndex: 'purchaseDate', render: (d) => dayjs(d).format('MMM D, YYYY') },
@@ -180,9 +223,10 @@ const Inventory = () => {
             <Table
                 dataSource={materials}
                 columns={columns}
+                expandable={{ expandedRowRender }}
                 rowKey="id"
                 loading={loading}
-                rowClassName={(r) => parseFloat(r.quantityOnHand) <= parseFloat(r.reorderLevel) ? 'low-stock-row' : ''}
+                rowClassName={(r) => r.variants?.some(v => parseFloat(v.quantityOnHand) <= parseFloat(v.reorderLevel)) ? 'low-stock-row' : ''}
                 pagination={{ pageSize: 20, showSizeChanger: true }}
                 style={{ background: 'white', borderRadius: 12 }}
                 scroll={{ x: 800 }}
@@ -200,6 +244,15 @@ const Inventory = () => {
                     <Form.Item name="name" label="Material Name" rules={[{ required: true }]}>
                         <Input placeholder="e.g. Premium Leather Hide" />
                     </Form.Item>
+                    <Form.Item name="category" label="Category" rules={[{ required: true }]}>
+                        <Select placeholder="Select category">
+                            <Select.Option value="Core Materials">Core Materials</Select.Option>
+                            <Select.Option value="Decor Elements">Decor Elements</Select.Option>
+                            <Select.Option value="Functional Parts">Functional Parts</Select.Option>
+                            <Select.Option value="Brand Packaging">Brand Packaging</Select.Option>
+                            <Select.Option value="Workshop Tools">Workshop Tools</Select.Option>
+                        </Select>
+                    </Form.Item>
                     <Form.Item name="unit" label="Unit" rules={[{ required: true }]}>
                         <Select placeholder="Select unit">
                             <Select.Option value="pc">pc</Select.Option>
@@ -209,12 +262,50 @@ const Inventory = () => {
                             <Select.Option value="box">box</Select.Option>
                         </Select>
                     </Form.Item>
-                    <Form.Item name="reorderLevel" label="Reorder Level">
-                        <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
-                    </Form.Item>
-                    <Form.Item name="manualUnitCost" label="Manual Cost Override (optional)">
-                        <InputNumber min={0} step={0.0001} style={{ width: '100%' }} prefix="₱" />
-                    </Form.Item>
+
+                    <Form.List name="variants" initialValue={[{ name: 'Standard' }]}>
+                        {(fields, { add, remove }) => (
+                            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, marginTop: 16 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                    <Text strong>Variants / Options (Colors, Sizes)</Text>
+                                    <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} size="small">
+                                        Add Variant
+                                    </Button>
+                                </div>
+
+                                {fields.map((field) => (
+                                    <div key={field.key} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 12 }}>
+                                        <Form.Item name={[field.name, 'id']} hidden><Input /></Form.Item>
+                                        <Form.Item
+                                            {...field}
+                                            name={[field.name, 'name']}
+                                            rules={[{ required: true, message: 'Missing name' }]}
+                                            style={{ flex: 1, marginBottom: 0 }}
+                                        >
+                                            <Input placeholder="Variant Name (e.g. Red, 2mm)" />
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...field}
+                                            name={[field.name, 'quantityOnHand']}
+                                            style={{ width: 100, marginBottom: 0 }}
+                                        >
+                                            <InputNumber placeholder="Initial Qty" min={0} style={{ width: '100%' }} />
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...field}
+                                            name={[field.name, 'reorderLevel']}
+                                            style={{ width: 100, marginBottom: 0 }}
+                                        >
+                                            <InputNumber placeholder="Reorder Lvl" min={0} style={{ width: '100%' }} />
+                                        </Form.Item>
+                                        {fields.length > 1 && (
+                                            <Button type="text" danger onClick={() => remove(field.name)} icon={<DeleteOutlined />} style={{ marginTop: 4 }} />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </Form.List>
                 </Form>
             </Modal>
 

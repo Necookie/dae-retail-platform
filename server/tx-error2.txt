@@ -1,0 +1,105 @@
+﻿--- FETCHING MATERIALS ---
+prisma:info Starting a postgresql pool with 9 connections.
+prisma:error 
+Invalid `prisma.rawMaterial.findFirst()` invocation in
+C:\Users\dheyn\Documents\01_Startup\02_DaeArtesania\dae-retail-platform\server\test-db-tx.js:7:52
+
+  4 async function run() {
+  5     try {
+  6         console.log('--- FETCHING MATERIALS ---');
+ΓåÆ 7         const fuzzyWire = await prisma.rawMaterial.findFirst(
+Can't reach database server at `ep-frosty-frog-ai90ctjk-pooler.c-4.us-east-1.aws.neon.tech:5432`
+
+Please make sure your database server is running at `ep-frosty-frog-ai90ctjk-pooler.c-4.us-east-1.aws.neon.tech:5432`.
+node : Γ¥î Error: Prism
+aClientInitializationEr
+ror: 
+At line:1 char:1
++ node test-db-tx.js 
+2>&1 | Out-File 
+-Encoding utf8 
+tx-error2.txt
++ 
+~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Γ¥î Error: Pr   
+ is...lizationError    
+: :String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+Invalid `prisma.rawMate
+rial.findFirst()` 
+invocation in
+C:\Users\dheyn\Document
+s\01_Startup\02_DaeArte
+sania\dae-retail-platfo
+rm\server\test-db-tx.js
+:7:52
+
+  4 async function 
+run() {
+  5     try {
+  6         
+console.log('--- 
+FETCHING MATERIALS 
+---');
+ΓåÆ 7         const 
+fuzzyWire = await prism
+a.rawMaterial.findFirst
+(
+Can't reach database 
+server at `ep-frosty-fr
+og-ai90ctjk-pooler.c-4.
+us-east-1.aws.neon.tech
+:5432`
+
+Please make sure your 
+database server is 
+running at `ep-frosty-f
+rog-ai90ctjk-pooler.c-4
+.us-east-1.aws.neon.tec
+h:5432`.
+    at 
+$n.handleRequestError (
+C:\Users\dheyn\Document
+s\01_Startup\02_DaeArte
+sania\dae-retail-platfo
+rm\server\node_modules\
+@prisma\client\runtime\
+library.js:121:7615)
+    at $n.handleAndLogR
+equestError (C:\Users\d
+heyn\Documents\01_Start
+up\02_DaeArtesania\dae-
+retail-platform\server\
+node_modules\@prisma\cl
+ient\runtime\library.js
+:121:6623)
+    at $n.request (C:\U
+sers\dheyn\Documents\01
+_Startup\02_DaeArtesani
+a\dae-retail-platform\s
+erver\node_modules\@pri
+sma\client\runtime\libr
+ary.js:121:6307)
+    at async l (C:\User
+s\dheyn\Documents\01_St
+artup\02_DaeArtesania\d
+ae-retail-platform\serv
+er\node_modules\@prisma
+\client\runtime\library
+.js:130:9633)
+    at async run (C:\Us
+ers\dheyn\Documents\01_
+Startup\02_DaeArtesania
+\dae-retail-platform\se
+rver\test-db-tx.js:7:27
+) {
+  clientVersion: 
+'5.22.0',
+  errorCode: undefined
+}

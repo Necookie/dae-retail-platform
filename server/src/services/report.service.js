@@ -27,20 +27,39 @@ const getRevenueSummary = async ({ startDate, endDate }) => {
  * Inventory value summary.
  */
 const getInventoryValue = async () => {
-    const materials = await prisma.rawMaterial.findMany({ where: { isActive: true } });
+    const materials = await prisma.rawMaterial.findMany({
+        where: { isActive: true },
+        include: { variants: true }
+    });
 
     let totalValue = 0;
     const items = materials.map((m) => {
-        const value = parseFloat(m.quantityOnHand) * parseFloat(m.weightedAvgCost);
-        totalValue += value;
+        let materialQty = 0;
+        let materialValue = 0;
+        let isLowStock = false;
+
+        if (m.variants && m.variants.length > 0) {
+            m.variants.forEach(v => {
+                const vQty = parseFloat(v.quantityOnHand) || 0;
+                const vCost = parseFloat(v.weightedAvgCost) || 0;
+                materialQty += vQty;
+                materialValue += (vQty * vCost);
+                if (vQty <= parseFloat(v.reorderLevel || 0)) {
+                    isLowStock = true;
+                }
+            });
+        }
+
+        totalValue += materialValue;
+
         return {
             id: m.id,
             name: m.name,
             unit: m.unit,
-            quantityOnHand: parseFloat(m.quantityOnHand),
-            weightedAvgCost: parseFloat(m.weightedAvgCost),
-            totalValue: value,
-            isLowStock: parseFloat(m.quantityOnHand) <= parseFloat(m.reorderLevel),
+            quantityOnHand: materialQty,
+            weightedAvgCost: materialQty > 0 ? (materialValue / materialQty) : 0,
+            totalValue: materialValue,
+            isLowStock: isLowStock,
         };
     });
 
@@ -105,10 +124,12 @@ const getDashboardKPIs = async () => {
         prisma.product.count({ where: { productionStatus: 'PENDING' } }),
     ]);
 
-    // Simplified low stock count
-    const materials = await prisma.rawMaterial.findMany({ where: { isActive: true } });
-    const lowStock = materials.filter(
-        (m) => parseFloat(m.quantityOnHand) <= parseFloat(m.reorderLevel)
+    // Low stock count by variant
+    const variants = await prisma.materialVariant.findMany({
+        where: { isActive: true }
+    });
+    const lowStock = variants.filter(
+        (v) => parseFloat(v.quantityOnHand) <= parseFloat(v.reorderLevel)
     ).length;
 
     return {

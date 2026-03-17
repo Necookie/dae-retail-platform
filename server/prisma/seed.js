@@ -21,18 +21,25 @@ async function main() {
     });
     console.log(`✅ Admin user: ${admin.email}`);
 
-    // ── Raw Materials ─────────────────────────────────────────────────────────
+    // ── Raw Materials & Variants ──────────────────────────────────────────────
     const red_wire = await prisma.rawMaterial.upsert({
         where: { id: 1 },
         update: {},
         create: {
             name: 'Red Fuzzy Wire',
             unit: 'pc',
-            quantityOnHand: 50,
-            reorderLevel: 10,
-            weightedAvgCost: 2.50,
-            latestUnitCost: 2.50,
+            variants: {
+                create: {
+                    name: 'Standard Red',
+                    sku: 'FW-RED-STD',
+                    quantityOnHand: 50,
+                    reorderLevel: 10,
+                    weightedAvgCost: 2.50,
+                    latestUnitCost: 2.50,
+                }
+            }
         },
+        include: { variants: true }
     });
 
     const stem_wire = await prisma.rawMaterial.upsert({
@@ -41,11 +48,18 @@ async function main() {
         create: {
             name: 'Green Stem Wire',
             unit: 'pc',
-            quantityOnHand: 30,
-            reorderLevel: 5,
-            weightedAvgCost: 3.00,
-            latestUnitCost: 3.00,
+            variants: {
+                create: {
+                    name: 'Standard Green',
+                    sku: 'SW-GRN-STD',
+                    quantityOnHand: 30,
+                    reorderLevel: 5,
+                    weightedAvgCost: 3.00,
+                    latestUnitCost: 3.00,
+                }
+            }
         },
+        include: { variants: true }
     });
 
     const floral_tape = await prisma.rawMaterial.upsert({
@@ -54,11 +68,18 @@ async function main() {
         create: {
             name: 'Floral Tape',
             unit: 'roll',
-            quantityOnHand: 20,
-            reorderLevel: 3,
-            weightedAvgCost: 45.00,
-            latestUnitCost: 45.00,
+            variants: {
+                create: {
+                    name: 'Standard Green Tape',
+                    sku: 'FT-GRN-STD',
+                    quantityOnHand: 20,
+                    reorderLevel: 3,
+                    weightedAvgCost: 45.00,
+                    latestUnitCost: 45.00,
+                }
+            }
         },
+        include: { variants: true }
     });
 
     const satin_ribbon = await prisma.rawMaterial.upsert({
@@ -67,14 +88,21 @@ async function main() {
         create: {
             name: 'Satin Ribbon - Nude',
             unit: 'meter',
-            quantityOnHand: 200,
-            reorderLevel: 30,
-            weightedAvgCost: 15.00,
-            latestUnitCost: 15.00,
+            variants: {
+                create: {
+                    name: 'Nude 1 inch',
+                    sku: 'SR-NUD-1IN',
+                    quantityOnHand: 200,
+                    reorderLevel: 30,
+                    weightedAvgCost: 15.00,
+                    latestUnitCost: 15.00,
+                }
+            }
         },
+        include: { variants: true }
     });
 
-    console.log(`✅ Raw materials seeded`);
+    console.log(`✅ Raw materials and variants seeded`);
 
     // ── Sample Product ────────────────────────────────────────────────────────
     const product = await prisma.product.upsert({
@@ -92,24 +120,24 @@ async function main() {
 
     // Product BOM (Build Components)
     await prisma.productMaterial.upsert({
-        where: { productId_materialId: { productId: product.id, materialId: red_wire.id } },
+        where: { productId_variantId: { productId: product.id, variantId: red_wire.variants[0].id } },
         update: {},
-        create: { productId: product.id, materialId: red_wire.id, quantityRequired: 15 },
+        create: { productId: product.id, materialId: red_wire.id, variantId: red_wire.variants[0].id, quantityRequired: 15 },
     });
     await prisma.productMaterial.upsert({
-        where: { productId_materialId: { productId: product.id, materialId: stem_wire.id } },
+        where: { productId_variantId: { productId: product.id, variantId: stem_wire.variants[0].id } },
         update: {},
-        create: { productId: product.id, materialId: stem_wire.id, quantityRequired: 5 },
+        create: { productId: product.id, materialId: stem_wire.id, variantId: stem_wire.variants[0].id, quantityRequired: 5 },
     });
     await prisma.productMaterial.upsert({
-        where: { productId_materialId: { productId: product.id, materialId: floral_tape.id } },
+        where: { productId_variantId: { productId: product.id, variantId: floral_tape.variants[0].id } },
         update: {},
-        create: { productId: product.id, materialId: floral_tape.id, quantityRequired: 1 },
+        create: { productId: product.id, materialId: floral_tape.id, variantId: floral_tape.variants[0].id, quantityRequired: 1 },
     });
     await prisma.productMaterial.upsert({
-        where: { productId_materialId: { productId: product.id, materialId: satin_ribbon.id } },
+        where: { productId_variantId: { productId: product.id, variantId: satin_ribbon.variants[0].id } },
         update: {},
-        create: { productId: product.id, materialId: satin_ribbon.id, quantityRequired: 2 },
+        create: { productId: product.id, materialId: satin_ribbon.id, variantId: satin_ribbon.variants[0].id, quantityRequired: 2 },
     });
 
     console.log(`✅ Sample arrangement seeded: ${product.name}`);

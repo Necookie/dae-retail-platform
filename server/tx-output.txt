@@ -1,0 +1,29 @@
+﻿--- FETCHING MATERIALS ---
+prisma:info Starting a postgresql pool with 9 connections.
+prisma:query SELECT "public"."raw_materials"."id", "public"."raw_materials"."name", "public"."raw_materials"."category", "public"."raw_materials"."unit", "public"."raw_materials"."is_active", "public"."raw_materials"."created_at", "public"."raw_materials"."updated_at" FROM "public"."raw_materials" WHERE "public"."raw_materials"."name" = $1 LIMIT $2 OFFSET $3
+node : Γ¥î Error: 
+TypeError: Cannot read 
+properties of null 
+(reading 'name')
+At line:1 char:1
++ node test-db-tx.js 
+2>&1 | Out-File 
+-Encoding utf8 
+tx-output.txt
++ 
+~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Γ¥î Error: Ty   
+ pe...reading 'name    
+'):String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+    at run (C:\Users\dh
+eyn\Documents\01_Startu
+p\02_DaeArtesania\dae-r
+etail-platform\server\t
+est-db-tx.js:11:50)
